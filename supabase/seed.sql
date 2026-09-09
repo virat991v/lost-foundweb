@@ -1,0 +1,46 @@
+-- ============================================================
+-- Lost & Found Campus Platform — Seed Data
+-- seed.sql
+-- ============================================================
+-- NOTE: Run this AFTER applying migrations.
+-- Creates demo admin user and sample data for development.
+-- In production, remove or restrict seed data.
+
+-- ============================================================
+-- DEMO ADMIN PROFILE
+-- (Assumes auth user already created via Supabase dashboard/API)
+-- ============================================================
+-- UPDATE profiles
+--   SET role = 'admin'
+-- WHERE email = 'admin@university.edu';
+
+-- ============================================================
+-- SAMPLE LOST ITEMS
+-- ============================================================
+-- (Placeholder UUIDs — replace user_id with actual profile ids)
+-- INSERT INTO lost_items (user_id, title, category, description, color, lost_date, campus_location, private_verification)
+-- VALUES
+--   ('00000000-0000-0000-0000-000000000001', 'Blue JanSport Backpack', 'bags',
+--    'Dark blue JanSport backpack with a broken left zipper. Contains textbooks and a laptop sleeve.',
+--    'blue', '2024-01-15', 'library', 'Inside front pocket has a red keychain with initials JM'),
+--   ('00000000-0000-0000-0000-000000000001', 'AirPods Pro (2nd Gen)', 'electronics',
+--    'White AirPods Pro in white charging case. Case has a small scratch on the lid.',
+--    'white', '2024-01-16', 'canteen', 'Serial number engraved: XJ4892K'),
+--   ('00000000-0000-0000-0000-000000000002', 'Student ID Card', 'documents',
+--    'University student ID card. Name: Taylor Brown, ID: STU-2024-0045.',
+--    'white', '2024-01-17', 'classroom', 'Student ID number on the back is 2024-0045');
+
+-- ============================================================
+-- SAMPLE FOUND ITEMS
+-- ============================================================
+-- INSERT INTO found_items (user_id, title, category, description, color, found_date, campus_location, current_location)
+-- VALUES
+--   ('00000000-0000-0000-0000-000000000003', 'Blue Backpack', 'bags',
+--    'Found a dark blue backpack near the library entrance. Contains books and a water bottle.',
+--    'blue', '2024-01-15', 'library', 'Turned in to Library front desk'),
+--   ('00000000-0000-0000-0000-000000000003', 'White Earbuds Case', 'electronics',
+--    'Found small white earbuds charging case in the canteen. No earbuds inside.',
+--    'white', '2024-01-16', 'canteen', 'Kept with finder, contact to retrieve'),
+--   ('00000000-0000-0000-0000-000000000004', 'University ID Card', 'documents',
+--    'Found a university student ID card on the floor in Building A classroom 204.',
+--    'white', '2024-01-17', 'classroom', 'Submitted to campus security office');
