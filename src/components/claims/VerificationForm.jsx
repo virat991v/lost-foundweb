@@ -69,7 +69,7 @@ export default function VerificationForm({ onSubmit, loading = false }) {
           >
             <Upload size={24} className="text-gray-600" />
             <span className="text-gray-400 text-sm">
-              {proofFile ? proofFile.name : 'Upload PDF, PNG, or JPG (max 10MB)'}
+              {proofFile ? proofFile.name : 'Upload PDF, PNG, or JPG'}
             </span>
             <span className="text-gray-600 text-xs">Click to browse</span>
           </label>

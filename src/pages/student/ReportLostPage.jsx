@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, Upload, Lightbulb } from 'lucide-react'
+import { ChevronRight, Upload, Lightbulb, CheckCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { lostItemsService } from '../../services/items/lostItemsService'
 import ClaimStepIndicator from '../../components/claims/ClaimStepIndicator'
@@ -25,6 +25,8 @@ export default function ReportLostPage() {
   const [photoPreview, setPhotoPreview] = useState(null)
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [submitted, setSubmitted] = useState(false)
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
@@ -55,12 +57,21 @@ export default function ReportLostPage() {
   }
 
   async function handleSubmit() {
+    setSubmitError('')
     setSubmitting(true)
     try {
       await lostItemsService.create({ ...form, user_id: user.id }, photoFile)
-      navigate('/dashboard')
+      setSubmitted(true)
     } catch (err) {
       console.error(err)
+      const msg = err.message ?? ''
+      if (msg.toLowerCase().includes('row-level security') || msg.toLowerCase().includes('rls') || msg.toLowerCase().includes('violates')) {
+        setSubmitError('Permission denied. Please make sure you are signed in and try again.')
+      } else if (msg.toLowerCase().includes('storage') || msg.toLowerCase().includes('bucket')) {
+        setSubmitError('Photo upload failed. Please check your connection and try again.')
+      } else {
+        setSubmitError(msg || 'Failed to submit report. Please try again.')
+      }
     } finally {
       setSubmitting(false)
     }
@@ -72,6 +83,33 @@ export default function ReportLostPage() {
       setPhotoFile(file)
       setPhotoPreview(URL.createObjectURL(file))
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="flex flex-col min-h-full items-center justify-center px-4 py-16">
+        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-10 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-[#D4F547]/20 rounded-full flex items-center justify-center mx-auto mb-5">
+            <CheckCircle size={32} className="text-[#D4F547]" />
+          </div>
+          <h2 className="text-white font-bold text-xl mb-2">Report Submitted!</h2>
+          <p className="text-gray-400 text-sm mb-2">
+            Your report for <strong className="text-white">{form.title}</strong> has been posted.
+          </p>
+          <p className="text-gray-500 text-sm mb-8">
+            We'll notify you if someone finds a matching item. Check your dashboard for updates.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Button variant="primary" className="w-full" onClick={() => navigate('/dashboard')}>
+              Go to Dashboard
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => navigate('/report-lost')}>
+              Report Another Item
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -140,7 +178,7 @@ export default function ReportLostPage() {
                         <p className="text-white text-sm font-medium">
                           {photoPreview ? photoFile?.name : 'Click to upload a photo'}
                         </p>
-                        <p className="text-gray-500 text-xs mt-1">PNG, JPG up to 10MB</p>
+                        <p className="text-gray-500 text-xs mt-1">PNG, JPG accepted</p>
                       </div>
                     </label>
                   </div>
@@ -150,6 +188,11 @@ export default function ReportLostPage() {
               {step === 4 && (
                 <>
                   <h2 className="text-white font-semibold mb-5">Step 4: Review & Submit</h2>
+                  {submitError && (
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 mb-4">
+                      <p className="text-red-400 text-sm">{submitError}</p>
+                    </div>
+                  )}
                   <div className="space-y-3">
                     {[
                       ['Item Name', form.title],

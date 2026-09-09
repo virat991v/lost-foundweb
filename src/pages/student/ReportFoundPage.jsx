@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { useNavigate } from 'react-router-dom'
-import { ChevronRight, Upload, Heart } from 'lucide-react'
+import { ChevronRight, Upload, Heart, CheckCircle } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import { foundItemsService } from '../../services/items/foundItemsService'
 import ClaimStepIndicator from '../../components/claims/ClaimStepIndicator'
@@ -24,6 +24,8 @@ export default function ReportFoundPage() {
   const [photoPreview, setPhotoPreview] = useState(null)
   const [errors, setErrors] = useState({})
   const [submitting, setSubmitting] = useState(false)
+  const [submitError, setSubmitError] = useState('')
+  const [submitted, setSubmitted] = useState(false)
 
   function update(field, value) {
     setForm((f) => ({ ...f, [field]: value }))
@@ -54,15 +56,51 @@ export default function ReportFoundPage() {
   }
 
   async function handleSubmit() {
+    setSubmitError('')
     setSubmitting(true)
     try {
       await foundItemsService.create({ ...form, user_id: user.id }, photoFile)
-      navigate('/dashboard')
+      setSubmitted(true)
     } catch (err) {
       console.error(err)
+      const msg = err.message ?? ''
+      if (msg.toLowerCase().includes('row-level security') || msg.toLowerCase().includes('violates')) {
+        setSubmitError('Permission denied. Please make sure you are signed in and try again.')
+      } else if (msg.toLowerCase().includes('storage') || msg.toLowerCase().includes('bucket')) {
+        setSubmitError('Photo upload failed. Please check your connection and try again.')
+      } else {
+        setSubmitError(msg || 'Failed to submit report. Please try again.')
+      }
     } finally {
       setSubmitting(false)
     }
+  }
+
+  if (submitted) {
+    return (
+      <div className="flex flex-col min-h-full items-center justify-center px-4 py-16">
+        <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-2xl p-10 max-w-md w-full text-center">
+          <div className="w-16 h-16 bg-[#D4F547]/20 rounded-full flex items-center justify-center mx-auto mb-5">
+            <CheckCircle size={32} className="text-[#D4F547]" />
+          </div>
+          <h2 className="text-white font-bold text-xl mb-2">Report Submitted!</h2>
+          <p className="text-gray-400 text-sm mb-2">
+            Thank you for reporting <strong className="text-white">{form.title}</strong>.
+          </p>
+          <p className="text-gray-500 text-sm mb-8">
+            Your report is now live. If the owner comes looking, the admin will match them with your report.
+          </p>
+          <div className="flex flex-col gap-3">
+            <Button variant="primary" className="w-full" onClick={() => navigate('/dashboard')}>
+              Go to Dashboard
+            </Button>
+            <Button variant="outline" className="w-full" onClick={() => navigate('/report-found')}>
+              Report Another Item
+            </Button>
+          </div>
+        </div>
+      </div>
+    )
   }
 
   return (
@@ -142,6 +180,11 @@ export default function ReportFoundPage() {
               {step === 4 && (
                 <>
                   <h2 className="text-white font-semibold mb-5">Step 4: Review & Submit</h2>
+                  {submitError && (
+                    <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 mb-4">
+                      <p className="text-red-400 text-sm">{submitError}</p>
+                    </div>
+                  )}
                   <div className="space-y-3">
                     {[
                       ['Item Name', form.title],

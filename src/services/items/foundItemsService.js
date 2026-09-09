@@ -27,10 +27,11 @@ export const foundItemsService = {
   async getById(id) {
     const { data, error } = await supabase
       .from('found_items')
-      .select('*, profiles(id, full_name, avatar_url, email)')
+      .select('*, profiles(id, full_name, avatar_url)')
       .eq('id', id)
-      .single()
+      .maybeSingle()
     if (error) throw error
+    if (!data) throw new Error('Item not found')
     return data
   },
 
@@ -47,14 +48,21 @@ export const foundItemsService = {
   async create(item, photoFile) {
     let photoUrl = ''
     if (photoFile) {
-      const ext = photoFile.name.split('.').pop()
-      const path = `${item.user_id}/${Date.now()}.${ext}`
-      const { error: uploadError } = await supabase.storage
-        .from('item-photos')
-        .upload(path, photoFile)
-      if (uploadError) throw uploadError
-      const { data } = supabase.storage.from('item-photos').getPublicUrl(path)
-      photoUrl = data.publicUrl
+      try {
+        const ext = photoFile.name.split('.').pop()
+        const path = `${item.user_id}/${Date.now()}.${ext}`
+        const { error: uploadError } = await supabase.storage
+          .from('item-photos')
+          .upload(path, photoFile)
+        if (!uploadError) {
+          const { data: urlData } = supabase.storage.from('item-photos').getPublicUrl(path)
+          photoUrl = urlData.publicUrl
+        } else {
+          console.warn('Photo upload failed, submitting without photo:', uploadError.message)
+        }
+      } catch (e) {
+        console.warn('Photo upload error, submitting without photo:', e)
+      }
     }
 
     const { data, error } = await supabase

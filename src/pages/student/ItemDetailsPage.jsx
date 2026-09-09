@@ -27,11 +27,21 @@ export default function ItemDetailsPage() {
   useEffect(() => {
     async function load() {
       setLoading(true)
-      const data = await service.getById(id)
-      setItem(data)
-      const sim = await service.getSimilar(data)
-      setSimilar(sim)
-      setLoading(false)
+      try {
+        const data = await service.getById(id)
+        setItem(data)
+        try {
+          const sim = await service.getSimilar(data)
+          setSimilar(sim)
+        } catch {
+          setSimilar([])
+        }
+      } catch (err) {
+        console.error('ItemDetailsPage load error:', err)
+        setItem(null)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [id, type])

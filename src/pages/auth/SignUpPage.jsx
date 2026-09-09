@@ -1,6 +1,6 @@
 import { useState } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
-import { Eye, EyeOff, Search, Info } from 'lucide-react'
+import { Eye, EyeOff, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
@@ -34,7 +34,7 @@ export default function SignUpPage() {
   function validate() {
     const e = {}
     if (!fullName.trim()) e.fullName = 'Full name is required'
-    if (!email.endsWith('.edu')) e.email = 'Must use a university .edu email address'
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Please enter a valid email address'
     if (password.length < 8) e.password = 'Password must be at least 8 characters'
     if (password !== confirmPassword) e.confirmPassword = 'Passwords do not match'
     return e
@@ -51,7 +51,14 @@ export default function SignUpPage() {
       await signUp(email, password, fullName)
       setSuccess(true)
     } catch (err) {
-      setError(err.message ?? 'Failed to create account. Please try again.')
+      const msg = err.message ?? ''
+      if (msg.toLowerCase().includes('rate limit') || msg.toLowerCase().includes('over_email_send_rate_limit')) {
+        setError('Too many sign-up attempts. Please wait a few minutes and try again.')
+      } else if (msg.toLowerCase().includes('already registered') || msg.toLowerCase().includes('user already registered')) {
+        setError('An account with this email already exists. Try signing in instead.')
+      } else {
+        setError(msg || 'Failed to create account. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -99,14 +106,6 @@ export default function SignUpPage() {
             <p className="text-gray-500 text-sm">Join your campus Lost &amp; Found hub</p>
           </div>
 
-          {/* Info banner */}
-          <div className="flex items-start gap-2.5 bg-blue-500/10 border border-blue-500/20 rounded-lg px-3.5 py-3 mb-6">
-            <Info size={15} className="text-blue-400 flex-shrink-0 mt-0.5" />
-            <p className="text-blue-300 text-xs leading-relaxed">
-              Must register with an authorized university email ending in <strong>.edu</strong>
-            </p>
-          </div>
-
           {error && (
             <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 mb-5">
               <p className="text-red-400 text-sm">{error}</p>
@@ -124,9 +123,9 @@ export default function SignUpPage() {
               required
             />
             <Input
-              label="University Email Address"
+              label="Email Address"
               type="email"
-              placeholder="you@university.edu"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               error={fieldErrors.email}

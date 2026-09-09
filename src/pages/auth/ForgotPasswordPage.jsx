@@ -60,7 +60,7 @@ export default function ForgotPasswordPage() {
             <>
               <div className="text-center mb-6">
                 <h1 className="text-white font-bold text-xl mb-1">Reset your password</h1>
-                <p className="text-gray-500 text-sm">Enter your university email to receive a reset link</p>
+                <p className="text-gray-500 text-sm">Enter your email address to receive a reset link</p>
               </div>
 
               {error && (
@@ -71,9 +71,9 @@ export default function ForgotPasswordPage() {
 
               <form onSubmit={handleSubmit} className="flex flex-col gap-4">
                 <Input
-                  label="University Email Address"
+                  label="Email Address"
                   type="email"
-                  placeholder="you@university.edu"
+                  placeholder="you@example.com"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
                   required

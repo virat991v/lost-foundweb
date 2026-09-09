@@ -62,6 +62,15 @@ export default function BrowsePage() {
     window.scrollTo({ top: 0, behavior: 'smooth' })
   }
 
+  const activeType = filters.type || 'all'
+
+  function handleTabChange(tab) {
+    const newFilters = { ...filters, type: tab === 'all' ? undefined : tab }
+    setFilters(newFilters)
+    setPage(1)
+    load(newFilters, 1)
+  }
+
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8">
@@ -72,11 +81,32 @@ export default function BrowsePage() {
           </p>
         </div>
 
+        {/* Lost / Found / All tabs */}
+        <div className="flex gap-1 mb-6 bg-[#111111] border border-[#2a2a2a] rounded-xl p-1 w-fit">
+          {[
+            { key: 'all',   label: 'All Items' },
+            { key: 'lost',  label: '🔴 Lost' },
+            { key: 'found', label: '🟢 Found' },
+          ].map(({ key, label }) => (
+            <button
+              key={key}
+              onClick={() => handleTabChange(key)}
+              className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+                activeType === key
+                  ? 'bg-[#D4F547] text-black'
+                  : 'text-gray-400 hover:text-white'
+              }`}
+            >
+              {label}
+            </button>
+          ))}
+        </div>
+
         <div className="mb-6">
           <SearchFilters onSearch={handleSearch} loading={loading} />
         </div>
 
-        <ItemGrid items={items} loading={loading} type="lost" />
+        <ItemGrid items={items} loading={loading} />
 
         {totalPages > 1 && (
           <div className="flex justify-center mt-8">

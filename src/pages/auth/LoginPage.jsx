@@ -38,7 +38,12 @@ export default function LoginPage() {
       await login(email, password)
       navigate(from, { replace: true })
     } catch (err) {
-      setError(err.message ?? 'Invalid credentials. Please try again.')
+      const msg = err.message ?? ''
+      if (msg.toLowerCase().includes('email not confirmed')) {
+        setError('Please confirm your email address before signing in. Check your inbox for a verification link.')
+      } else {
+        setError(msg || 'Invalid credentials. Please try again.')
+      }
     } finally {
       setLoading(false)
     }
@@ -57,7 +62,7 @@ export default function LoginPage() {
 
           <div className="text-center mb-8">
             <h1 className="text-white font-bold text-xl mb-1">Sign in to your account</h1>
-            <p className="text-gray-500 text-sm">Secure collegiate authentication access</p>
+            <p className="text-gray-500 text-sm">Sign in to report or track lost &amp; found items</p>
           </div>
 
           {error && (
@@ -68,9 +73,9 @@ export default function LoginPage() {
 
           <form onSubmit={handleSubmit} className="flex flex-col gap-4">
             <Input
-              label="University Email Address"
+              label="Email Address"
               type="email"
-              placeholder="you@university.edu"
+              placeholder="you@example.com"
               value={email}
               onChange={(e) => setEmail(e.target.value)}
               required

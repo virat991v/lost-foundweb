@@ -9,6 +9,8 @@ export default function ItemCard({ item, type = 'lost' }) {
   const formattedDate = date ? format(new Date(date), 'MMM d, yyyy') : ''
   const detailPath = `/items/${type}/${item.id}`
 
+  const isLost = type === 'lost'
+
   return (
     <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden flex flex-col hover:border-[#333] transition-colors">
       {/* Photo */}
@@ -33,17 +35,26 @@ export default function ItemCard({ item, type = 'lost' }) {
         <div className="absolute top-2 right-2">
           <Badge status={item.status} />
         </div>
-        {/* Type badge top-left */}
+        {/* Lost / Found type badge top-left */}
         <div className="absolute top-2 left-2">
-          <span className="text-[10px] font-semibold uppercase tracking-wider bg-[#0a0a0a]/80 text-gray-300 px-2 py-0.5 rounded">
-            {getCategoryLabel(item.category)}
+          <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
+            isLost
+              ? 'bg-red-500/20 text-red-400 border border-red-500/30'
+              : 'bg-green-500/20 text-green-400 border border-green-500/30'
+          }`}>
+            {isLost ? 'Lost' : 'Found'}
           </span>
         </div>
       </div>
 
       {/* Content */}
       <div className="p-4 flex flex-col flex-1 gap-3">
-        <h3 className="text-white font-semibold text-sm leading-snug line-clamp-2">{item.title}</h3>
+        <div className="flex items-center justify-between gap-2">
+          <h3 className="text-white font-semibold text-sm leading-snug line-clamp-2">{item.title}</h3>
+          <span className="text-[10px] text-gray-500 shrink-0 bg-[#0a0a0a] px-2 py-0.5 rounded border border-[#2a2a2a]">
+            {getCategoryLabel(item.category)}
+          </span>
+        </div>
 
         <div className="flex flex-col gap-1.5">
           <div className="flex items-center gap-1.5 text-gray-500 text-xs">
