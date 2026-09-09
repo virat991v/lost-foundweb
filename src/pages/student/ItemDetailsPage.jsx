@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react'
 import { useParams, useNavigate, Link } from 'react-router-dom'
-import { MapPin, Calendar, ChevronRight, Bookmark, Share2 } from 'lucide-react'
+import { MapPin, Calendar, ChevronRight, Share2, ShieldCheck, MessageSquare, CheckCircle, Package } from 'lucide-react'
 import { lostItemsService } from '../../services/items/lostItemsService'
 import { foundItemsService } from '../../services/items/foundItemsService'
 import { claimsService } from '../../services/claims/claimsService'
@@ -69,6 +69,15 @@ export default function ItemDetailsPage() {
 
   const date = item.lost_date || item.found_date
   const isOwner = user?.id === item.user_id
+  const isFound = type === 'found'
+
+  // Label & messaging depends on item type
+  const claimButtonLabel = isFound
+    ? 'This is Mine — Claim It Back'
+    : 'I Found This — I Have It'
+  const claimButtonDesc = isFound
+    ? 'If this is your lost item, submit a claim to prove ownership and get it back.'
+    : 'If you found this item or know where it is, submit a claim to connect with the owner.'
 
   return (
     <div className="flex flex-col min-h-full">
@@ -77,13 +86,13 @@ export default function ItemDetailsPage() {
         <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-6">
           <Link to="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
           <ChevronRight size={14} />
-          <Link to="/browse" className="hover:text-white transition-colors">Search</Link>
+          <Link to="/browse" className="hover:text-white transition-colors">Browse</Link>
           <ChevronRight size={14} />
           <span className="text-gray-300 truncate">{item.title}</span>
         </div>
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
-          {/* Left — photos */}
+          {/* Left — photo */}
           <div>
             <div className="aspect-square bg-[#111111] rounded-xl overflow-hidden border border-[#2a2a2a] flex items-center justify-center mb-3">
               {item.photo_url ? (
@@ -99,24 +108,22 @@ export default function ItemDetailsPage() {
                 </div>
               )}
             </div>
-            {/* Thumbnail row placeholder */}
-            <div className="flex gap-2">
-              {[0, 1, 2].map((i) => (
-                <div key={i} className="w-20 h-20 bg-[#111111] border border-[#2a2a2a] rounded-lg flex items-center justify-center text-gray-700">
-                  <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
-                    <rect x="3" y="3" width="18" height="18" rx="2" />
-                    <circle cx="8.5" cy="8.5" r="1.5" />
-                  </svg>
-                </div>
-              ))}
-            </div>
           </div>
 
           {/* Right — details */}
-          <div>
+          <div className="flex flex-col">
             <div className="flex items-center gap-2 mb-3">
               <Badge status={item.status} />
-              <Badge status={type} label={getCategoryLabel(item.category)} />
+              <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
+                isFound
+                  ? 'bg-green-500/20 text-green-400 border-green-500/30'
+                  : 'bg-red-500/20 text-red-400 border-red-500/30'
+              }`}>
+                {isFound ? 'Found Item' : 'Lost Item'}
+              </span>
+              <span className="text-xs text-gray-500 bg-[#0a0a0a] border border-[#2a2a2a] px-2 py-0.5 rounded">
+                {getCategoryLabel(item.category)}
+              </span>
             </div>
 
             <h1 className="text-white font-bold text-2xl mb-3">{item.title}</h1>
@@ -140,9 +147,7 @@ export default function ItemDetailsPage() {
             </div>
 
             <div className="mb-5">
-              <h3 className="text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">
-                Item Description
-              </h3>
+              <h3 className="text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-2">Description</h3>
               <p className="text-gray-300 text-sm leading-relaxed">{item.description}</p>
             </div>
 
@@ -162,28 +167,47 @@ export default function ItemDetailsPage() {
               </div>
             )}
 
-            {claimError && (
-              <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 mb-4">
-                <p className="text-red-400 text-sm">{claimError}</p>
+            {/* ── Claim / Get Item Back section ── */}
+            {!isOwner && item.status === 'active' && (
+              <div className="mt-auto">
+                <div className="bg-[#D4F547]/5 border border-[#D4F547]/20 rounded-xl p-4 mb-4">
+                  <p className="text-[#D4F547] text-xs font-bold uppercase tracking-wider mb-1">
+                    {isFound ? 'Is this your item?' : 'Do you have this item?'}
+                  </p>
+                  <p className="text-gray-400 text-sm">{claimButtonDesc}</p>
+                </div>
+
+                {claimError && (
+                  <div className="bg-red-500/10 border border-red-500/30 rounded-lg px-4 py-3 mb-3">
+                    <p className="text-red-400 text-sm">{claimError}</p>
+                  </div>
+                )}
+
+                <Button
+                  variant="primary"
+                  className="w-full mb-3"
+                  onClick={handleClaim}
+                  loading={claiming}
+                >
+                  {claimButtonLabel}
+                </Button>
+
+                <p className="text-gray-600 text-xs text-center">
+                  Your contact info stays private until admin verifies ownership
+                </p>
               </div>
             )}
 
-            {!isOwner && item.status === 'active' && (
-              <Button
-                variant="primary"
-                className="w-full mb-3"
-                onClick={handleClaim}
-                loading={claiming}
-              >
-                This is Mine — Submit Claim
-              </Button>
+            {isOwner && (
+              <div className="mt-auto bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4">
+                <p className="text-gray-400 text-sm">This is your report.</p>
+                <p className="text-gray-600 text-xs mt-1">
+                  You'll be notified when someone submits a claim on this item.
+                </p>
+              </div>
             )}
 
-            <div className="flex gap-4">
-              <button className="flex items-center gap-1.5 text-gray-400 text-sm hover:text-white transition-colors">
-                <Bookmark size={14} />
-                Save Listing
-              </button>
+            <div className="flex gap-4 mt-4">
               <button
                 className="flex items-center gap-1.5 text-gray-400 text-sm hover:text-white transition-colors"
                 onClick={() => navigator.clipboard?.writeText(window.location.href)}
@@ -194,6 +218,32 @@ export default function ItemDetailsPage() {
             </div>
           </div>
         </div>
+
+        {/* ── How it works ── */}
+        {!isOwner && item.status === 'active' && (
+          <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-8">
+            <h3 className="text-white font-semibold text-sm mb-5">How to get your item back</h3>
+            <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
+              {[
+                { icon: MessageSquare, step: '1', title: 'Submit a Claim', desc: 'Click the claim button above and answer a few verification questions.' },
+                { icon: ShieldCheck,   step: '2', title: 'Admin Reviews',  desc: 'Campus admin verifies your answers against the private item details.' },
+                { icon: CheckCircle,   step: '3', title: 'Get Approved',   desc: 'Once verified, your contact info is shared with the finder/reporter.' },
+                { icon: Package,       step: '4', title: 'Collect Item',   desc: 'Meet at a campus safe zone and confirm the handoff in the app.' },
+              ].map(({ icon: Icon, step, title, desc }) => (
+                <div key={step} className="flex flex-col items-start gap-2">
+                  <div className="flex items-center gap-2">
+                    <span className="w-6 h-6 rounded-full bg-[#D4F547]/20 text-[#D4F547] text-xs font-bold flex items-center justify-center flex-shrink-0">
+                      {step}
+                    </span>
+                    <Icon size={14} className="text-[#D4F547]" />
+                  </div>
+                  <p className="text-white text-sm font-medium">{title}</p>
+                  <p className="text-gray-500 text-xs leading-relaxed">{desc}</p>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {similar.length > 0 && (
           <SimilarItems items={similar} type={type} />
