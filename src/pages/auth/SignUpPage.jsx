@@ -71,46 +71,28 @@ export default function SignUpPage() {
       >
         <div className="w-full max-w-sm">
           <div className="bg-[#111111] border border-[#2a2a2a] rounded-2xl p-8 text-center">
-            {/* Mail icon */}
-            <div className="w-16 h-16 bg-[#D4F547]/20 rounded-full flex items-center justify-center mx-auto mb-5">
-              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#D4F547" strokeWidth="2">
-                <rect x="2" y="4" width="20" height="16" rx="2"/>
-                <polyline points="2,4 12,13 22,4"/>
+            {/* Green tick */}
+            <div className="w-16 h-16 bg-green-500/20 rounded-full flex items-center justify-center mx-auto mb-5">
+              <svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="#22c55e" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round">
+                <polyline points="20 6 9 17 4 12" />
               </svg>
             </div>
 
-            <h2 className="text-white font-bold text-xl mb-2">Verify your email</h2>
-            <p className="text-gray-400 text-sm mb-6">
-              We sent a verification link to{' '}
-              <strong className="text-white">{email}</strong>
+            <h2 className="text-white font-bold text-xl mb-2">Account Created!</h2>
+            <p className="text-gray-400 text-sm mb-2">
+              A verification link has been sent to
             </p>
+            <p className="text-white font-semibold text-sm mb-6">{email}</p>
 
-            {/* Steps */}
-            <div className="text-left bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 mb-6 space-y-3">
-              {[
-                { n: '1', text: 'Open your email inbox' },
-                { n: '2', text: 'Find the email from lost-found' },
-                { n: '3', text: 'Click the "Confirm your email" link' },
-                { n: '4', text: 'You\'ll be redirected to sign in' },
-              ].map(({ n, text }) => (
-                <div key={n} className="flex items-center gap-3">
-                  <span className="w-6 h-6 rounded-full bg-[#D4F547]/20 text-[#D4F547] text-xs font-bold flex items-center justify-center flex-shrink-0">
-                    {n}
-                  </span>
-                  <span className="text-gray-300 text-sm">{text}</span>
-                </div>
-              ))}
-            </div>
-
-            <p className="text-gray-600 text-xs mb-5">
-              Can't find it? Check your spam/junk folder.
+            <p className="text-gray-500 text-xs mb-6">
+              Open Gmail, find the email from lost-found and click the link to activate your account. Check spam if you don't see it.
             </p>
 
             <Link
               to="/login"
-              className="text-[#D4F547] text-sm hover:underline"
+              className="inline-block bg-[#D4F547] text-black font-bold text-sm px-6 py-2.5 rounded-lg hover:bg-[#c2e040] transition-colors"
             >
-              Already verified? Sign in →
+              Go to Sign In
             </Link>
           </div>
         </div>
