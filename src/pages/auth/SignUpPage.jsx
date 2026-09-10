@@ -21,6 +21,7 @@ export default function SignUpPage() {
   const navigate = useNavigate()
 
   const [fullName, setFullName] = useState('')
+  const [phone, setPhone] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [confirmPassword, setConfirmPassword] = useState('')
@@ -35,6 +36,7 @@ export default function SignUpPage() {
     const e = {}
     if (!fullName.trim()) e.fullName = 'Full name is required'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Please enter a valid email address'
+    if (phone && !/^\+?[\d\s\-()]{7,15}$/.test(phone)) e.phone = 'Please enter a valid phone number'
     if (password.length < 8) e.password = 'Password must be at least 8 characters'
     if (password !== confirmPassword) e.confirmPassword = 'Passwords do not match'
     return e
@@ -48,7 +50,7 @@ export default function SignUpPage() {
     setError('')
     setLoading(true)
     try {
-      await signUp(email, password, fullName)
+      await signUp(email, password, fullName, phone)
       setSuccess(true)
     } catch (err) {
       const msg = err.message ?? ''
@@ -138,6 +140,15 @@ export default function SignUpPage() {
               error={fieldErrors.email}
               required
               autoComplete="email"
+            />
+            <Input
+              label="Phone Number (optional)"
+              type="tel"
+              placeholder="+91 98765 43210"
+              value={phone}
+              onChange={(e) => setPhone(e.target.value)}
+              error={fieldErrors.phone}
+              autoComplete="tel"
             />
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-gray-300">Password</label>

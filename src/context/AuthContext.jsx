@@ -51,16 +51,25 @@ export function AuthProvider({ children }) {
     return () => subscription.unsubscribe()
   }, [])
 
-  async function signUp(email, password, fullName) {
+  async function signUp(email, password, fullName, phone) {
     const { data, error } = await supabase.auth.signUp({
       email,
       password,
       options: {
-        data: { full_name: fullName },
+        data: { full_name: fullName, phone: phone || null },
         emailRedirectTo: `${window.location.origin}/login`,
       },
     })
     if (error) throw error
+
+    // Save phone to profiles table if provided
+    if (phone && data?.user?.id) {
+      await supabase
+        .from('profiles')
+        .update({ phone })
+        .eq('id', data.user.id)
+    }
+
     return data
   }
 

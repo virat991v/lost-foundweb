@@ -14,17 +14,24 @@ const meetingSpots = [
   { name: 'Campus Security Office', desc: 'Most secure option — officer present', icon: '🔒' },
 ]
 
-function ContactCard({ label, name, email, isYou = false }) {
-  const [copied, setCopied] = useState(false)
+function ContactCard({ label, name, email, phone, isYou = false }) {
+  const [copiedEmail, setCopiedEmail] = useState(false)
+  const [copiedPhone, setCopiedPhone] = useState(false)
 
   function copyEmail() {
     navigator.clipboard?.writeText(email)
-    setCopied(true)
-    setTimeout(() => setCopied(false), 2000)
+    setCopiedEmail(true)
+    setTimeout(() => setCopiedEmail(false), 2000)
+  }
+
+  function copyPhone() {
+    navigator.clipboard?.writeText(phone)
+    setCopiedPhone(true)
+    setTimeout(() => setCopiedPhone(false), 2000)
   }
 
   return (
-    <div className={`bg-[#1a1a1a] rounded-xl p-5 flex flex-col gap-4 ${
+    <div className={`bg-[#1a1a1a] rounded-xl p-5 flex flex-col gap-3 ${
       isYou ? 'border border-[#D4F547]/30' : 'border border-[#2a2a2a]'
     }`}>
       <p className="text-[10px] font-bold tracking-widest uppercase text-gray-500">
@@ -48,28 +55,51 @@ function ContactCard({ label, name, email, isYou = false }) {
         <Mail size={13} className="text-gray-500 flex-shrink-0" />
         <span className="text-white text-sm flex-1 truncate">{email ?? '—'}</span>
         {email && (
-          <button
-            onClick={copyEmail}
-            className="text-gray-500 hover:text-[#D4F547] transition-colors flex-shrink-0"
-            title="Copy email"
-          >
-            {copied
-              ? <CheckCircle size={13} className="text-[#D4F547]" />
-              : <Copy size={13} />
-            }
+          <button onClick={copyEmail} className="text-gray-500 hover:text-[#D4F547] transition-colors flex-shrink-0" title="Copy email">
+            {copiedEmail ? <CheckCircle size={13} className="text-[#D4F547]" /> : <Copy size={13} />}
           </button>
         )}
       </div>
 
-      {/* Mail to button */}
-      {email && !isYou && (
-        <a
-          href={`mailto:${email}`}
-          className="flex items-center justify-center gap-2 w-full bg-[#D4F547] hover:bg-[#c2e040] text-black font-semibold text-sm py-2.5 rounded-lg transition-colors"
-        >
-          <MessageSquare size={14} />
-          Send Email
-        </a>
+      {/* Phone row */}
+      <div className="bg-[#111111] border border-[#2a2a2a] rounded-lg px-3 py-2.5 flex items-center gap-2">
+        <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" className="text-gray-500 flex-shrink-0">
+          <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.03 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/>
+        </svg>
+        <span className={`text-sm flex-1 truncate ${phone ? 'text-white' : 'text-gray-600 italic'}`}>
+          {phone || 'Not provided'}
+        </span>
+        {phone && (
+          <button onClick={copyPhone} className="text-gray-500 hover:text-[#D4F547] transition-colors flex-shrink-0" title="Copy phone">
+            {copiedPhone ? <CheckCircle size={13} className="text-[#D4F547]" /> : <Copy size={13} />}
+          </button>
+        )}
+      </div>
+
+      {/* Action buttons */}
+      {!isYou && (
+        <div className="flex gap-2 mt-1">
+          {email && (
+            <a
+              href={`mailto:${email}`}
+              className="flex-1 flex items-center justify-center gap-1.5 bg-[#D4F547] hover:bg-[#c2e040] text-black font-semibold text-xs py-2.5 rounded-lg transition-colors"
+            >
+              <MessageSquare size={13} />
+              Email
+            </a>
+          )}
+          {phone && (
+            <a
+              href={`tel:${phone}`}
+              className="flex-1 flex items-center justify-center gap-1.5 border border-[#D4F547] text-[#D4F547] hover:bg-[#D4F547]/10 font-semibold text-xs py-2.5 rounded-lg transition-colors"
+            >
+              <svg width="13" height="13" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2">
+                <path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07A19.5 19.5 0 013.07 9.81 19.79 19.79 0 01.03 1.18 2 2 0 012 0h3a2 2 0 012 1.72c.127.96.361 1.903.7 2.81a2 2 0 01-.45 2.11L6.09 7.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45c.907.339 1.85.573 2.81.7A2 2 0 0122 14.92v2z"/>
+              </svg>
+              Call
+            </a>
+          )}
+        </div>
       )}
     </div>
   )
@@ -140,12 +170,14 @@ export default function ContactRevealPage() {
             label={myLabel}
             name={claimantProfile?.full_name}
             email={claimantProfile?.email}
+            phone={claimantProfile?.phone}
             isYou={true}
           />
           <ContactCard
             label={otherLabel}
             name={reporterProfile?.full_name ?? 'Campus User'}
             email={reporterProfile?.email ?? 'Contact via admin'}
+            phone={reporterProfile?.phone}
           />
         </div>
 
