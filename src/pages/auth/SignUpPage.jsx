@@ -71,21 +71,46 @@ export default function SignUpPage() {
       >
         <div className="w-full max-w-sm">
           <div className="bg-[#111111] border border-[#2a2a2a] rounded-2xl p-8 text-center">
-            <div className="w-14 h-14 bg-[#D4F547]/20 rounded-full flex items-center justify-center mx-auto mb-4">
-              <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#D4F547" strokeWidth="2.5">
-                <polyline points="20 6 9 17 4 12" />
+            {/* Mail icon */}
+            <div className="w-16 h-16 bg-[#D4F547]/20 rounded-full flex items-center justify-center mx-auto mb-5">
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#D4F547" strokeWidth="2">
+                <rect x="2" y="4" width="20" height="16" rx="2"/>
+                <polyline points="2,4 12,13 22,4"/>
               </svg>
             </div>
-            <h2 className="text-white font-bold text-xl mb-2">Check your email</h2>
+
+            <h2 className="text-white font-bold text-xl mb-2">Verify your email</h2>
             <p className="text-gray-400 text-sm mb-6">
-              We sent a confirmation link to <strong className="text-white">{email}</strong>.
-              Click the link to activate your account.
+              We sent a verification link to{' '}
+              <strong className="text-white">{email}</strong>
             </p>
+
+            {/* Steps */}
+            <div className="text-left bg-[#0a0a0a] border border-[#2a2a2a] rounded-xl p-4 mb-6 space-y-3">
+              {[
+                { n: '1', text: 'Open your email inbox' },
+                { n: '2', text: 'Find the email from lost-found' },
+                { n: '3', text: 'Click the "Confirm your email" link' },
+                { n: '4', text: 'You\'ll be redirected to sign in' },
+              ].map(({ n, text }) => (
+                <div key={n} className="flex items-center gap-3">
+                  <span className="w-6 h-6 rounded-full bg-[#D4F547]/20 text-[#D4F547] text-xs font-bold flex items-center justify-center flex-shrink-0">
+                    {n}
+                  </span>
+                  <span className="text-gray-300 text-sm">{text}</span>
+                </div>
+              ))}
+            </div>
+
+            <p className="text-gray-600 text-xs mb-5">
+              Can't find it? Check your spam/junk folder.
+            </p>
+
             <Link
               to="/login"
               className="text-[#D4F547] text-sm hover:underline"
             >
-              Back to Sign In
+              Already verified? Sign in →
             </Link>
           </div>
         </div>
