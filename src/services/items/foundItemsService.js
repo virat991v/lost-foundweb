@@ -27,7 +27,7 @@ export const foundItemsService = {
   async getById(id) {
     const { data, error } = await supabase
       .from('found_items')
-      .select('*, profiles(id, full_name, avatar_url)')
+      .select('*, profiles(id, full_name, avatar_url, email)')
       .eq('id', id)
       .maybeSingle()
     if (error) throw error
