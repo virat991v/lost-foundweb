@@ -132,6 +132,7 @@ export const adminService = {
   },
 
   async approveClaim(claimId, adminId, notes) {
+    // 1. Approve the claim
     const { data, error } = await supabase
       .from('claims')
       .update({
@@ -144,6 +145,14 @@ export const adminService = {
       .select()
       .single()
     if (error) throw error
+
+    // 2. Mark the item as returned
+    const table = data.item_type === 'lost' ? 'lost_items' : 'found_items'
+    await supabase
+      .from(table)
+      .update({ status: 'returned' })
+      .eq('id', data.item_id)
+
     return data
   },
 

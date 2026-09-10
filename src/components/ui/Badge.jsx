@@ -1,4 +1,5 @@
 const variants = {
+  returned: 'bg-green-600/30 text-green-300 border border-green-500/50',
   active: 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
   active_case: 'bg-orange-500/20 text-orange-400 border border-orange-500/30',
   pending: 'bg-purple-500/20 text-purple-400 border border-purple-500/30',
@@ -26,6 +27,7 @@ const variants = {
 }
 
 const LABELS = {
+  returned: 'Returned',
   active: 'Active',
   active_case: 'Active Case',
   pending: 'Pending',

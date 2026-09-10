@@ -167,6 +167,21 @@ export default function ItemDetailsPage() {
               </div>
             )}
 
+            {/* ── RETURNED stamp ── */}
+            {item.status === 'returned' && (
+              <div className="mt-auto mb-4">
+                <div className="border-4 border-green-400 rounded-xl px-6 py-4 flex items-center justify-center gap-3 rotate-[-2deg]">
+                  <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5">
+                    <polyline points="20 6 9 17 4 12" />
+                  </svg>
+                  <p className="text-green-400 font-black text-2xl tracking-widest uppercase">Returned</p>
+                </div>
+                <p className="text-gray-500 text-xs text-center mt-3">
+                  This item has been successfully returned to its owner.
+                </p>
+              </div>
+            )}
+
             {/* ── Claim / Get Item Back section ── */}
             {!isOwner && item.status === 'active' && (
               <div className="mt-auto">

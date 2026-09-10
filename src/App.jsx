@@ -24,6 +24,7 @@ import ClaimVerificationPage from './pages/student/ClaimVerificationPage'
 import ContactRevealPage from './pages/student/ContactRevealPage'
 import ReturnConfirmationPage from './pages/student/ReturnConfirmationPage'
 import MyClaimsPage from './pages/student/MyClaimsPage'
+import ClaimStatusPage from './pages/student/ClaimStatusPage'
 
 // Admin
 import AdminDashboardPage from './pages/admin/AdminDashboardPage'
@@ -64,7 +65,7 @@ export default function App() {
             <Route path="/claims/:id/verify" element={<ClaimVerificationPage />} />
             <Route path="/claims/:id/contact" element={<ContactRevealPage />} />
             <Route path="/claims/:id/confirm" element={<ReturnConfirmationPage />} />
-            <Route path="/claims/:id/status" element={<MyClaimsPage />} />
+            <Route path="/claims/:id/status" element={<ClaimStatusPage />} />
           </Route>
 
           {/* Admin — admin-only protected */}

@@ -2,6 +2,8 @@ import { useState, useEffect } from 'react'
 import { useParams, useNavigate } from 'react-router-dom'
 import { CheckCircle, Star } from 'lucide-react'
 import { claimsService } from '../../services/claims/claimsService'
+import { lostItemsService } from '../../services/items/lostItemsService'
+import { foundItemsService } from '../../services/items/foundItemsService'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/ui/Button'
 import Textarea from '../../components/ui/Textarea'
@@ -35,15 +37,21 @@ export default function ReturnConfirmationPage() {
   async function handleConfirmAndRate() {
     setSubmitting(true)
     try {
-      if (!returnRecord) {
-        await claimsService.createReturn(id)
+      let ret = returnRecord
+      if (!ret) {
+        ret = await claimsService.createReturn(id)
       }
-      if (rating) {
-        await claimsService.submitRating(returnRecord?.id ?? id, rating, feedback)
+      if (rating && ret?.id) {
+        await claimsService.submitRating(ret.id, rating, feedback)
+      }
+      // Mark the item as returned
+      if (claim?.item_id && claim?.item_type) {
+        const itemService = claim.item_type === 'lost' ? lostItemsService : foundItemsService
+        await itemService.updateStatus(claim.item_id, 'returned')
       }
       setDone(true)
     } catch (err) {
-      console.error(err)
+      console.error('Return confirmation error:', err)
     } finally {
       setSubmitting(false)
     }

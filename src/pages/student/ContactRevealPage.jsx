@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react'
 import { useParams } from 'react-router-dom'
-import { CheckCircle, MessageSquare, MapPin, AlertTriangle } from 'lucide-react'
+import { CheckCircle, MessageSquare, MapPin, AlertTriangle, Mail, Copy } from 'lucide-react'
 import { claimsService } from '../../services/claims/claimsService'
+import { lostItemsService } from '../../services/items/lostItemsService'
+import { foundItemsService } from '../../services/items/foundItemsService'
 import { useAuth } from '../../context/AuthContext'
 import Button from '../../components/ui/Button'
 import { PageSpinner } from '../../components/ui/Spinner'
@@ -12,97 +14,150 @@ const meetingSpots = [
   { name: 'Campus Security Office', desc: 'Most secure option — officer present', icon: '🔒' },
 ]
 
+function ContactCard({ label, name, email, isYou = false }) {
+  const [copied, setCopied] = useState(false)
+
+  function copyEmail() {
+    navigator.clipboard?.writeText(email)
+    setCopied(true)
+    setTimeout(() => setCopied(false), 2000)
+  }
+
+  return (
+    <div className={`bg-[#1a1a1a] rounded-xl p-5 flex flex-col gap-4 ${
+      isYou ? 'border border-[#D4F547]/30' : 'border border-[#2a2a2a]'
+    }`}>
+      <p className="text-[10px] font-bold tracking-widest uppercase text-gray-500">
+        {label}
+      </p>
+
+      <div className="flex items-center gap-3">
+        <div className={`w-11 h-11 rounded-full flex items-center justify-center text-sm font-bold flex-shrink-0 ${
+          isYou ? 'bg-[#D4F547] text-black' : 'bg-[#2a2a2a] text-white'
+        }`}>
+          {name?.[0]?.toUpperCase() ?? '?'}
+        </div>
+        <div className="min-w-0">
+          <p className="text-white font-semibold text-sm">{name ?? 'Unknown'}</p>
+          {isYou && <p className="text-gray-500 text-xs">That's you</p>}
+        </div>
+      </div>
+
+      {/* Email row */}
+      <div className="bg-[#111111] border border-[#2a2a2a] rounded-lg px-3 py-2.5 flex items-center gap-2">
+        <Mail size={13} className="text-gray-500 flex-shrink-0" />
+        <span className="text-white text-sm flex-1 truncate">{email ?? '—'}</span>
+        {email && (
+          <button
+            onClick={copyEmail}
+            className="text-gray-500 hover:text-[#D4F547] transition-colors flex-shrink-0"
+            title="Copy email"
+          >
+            {copied
+              ? <CheckCircle size={13} className="text-[#D4F547]" />
+              : <Copy size={13} />
+            }
+          </button>
+        )}
+      </div>
+
+      {/* Mail to button */}
+      {email && !isYou && (
+        <a
+          href={`mailto:${email}`}
+          className="flex items-center justify-center gap-2 w-full bg-[#D4F547] hover:bg-[#c2e040] text-black font-semibold text-sm py-2.5 rounded-lg transition-colors"
+        >
+          <MessageSquare size={14} />
+          Send Email
+        </a>
+      )}
+    </div>
+  )
+}
+
 export default function ContactRevealPage() {
   const { id } = useParams()
   const { user, profile } = useAuth()
   const [claim, setClaim] = useState(null)
+  const [reporter, setReporter] = useState(null)   // person who posted the item
   const [loading, setLoading] = useState(true)
-  const [disclosed, setDisclosed] = useState(false)
 
   useEffect(() => {
     async function load() {
-      const data = await claimsService.getById(id)
-      setClaim(data)
-      setLoading(false)
+      try {
+        const claimData = await claimsService.getById(id)
+        setClaim(claimData)
+
+        // Fetch the item to get the reporter's profile
+        const itemService = claimData.item_type === 'lost' ? lostItemsService : foundItemsService
+        const itemData = await itemService.getById(claimData.item_id)
+        setReporter(itemData?.profiles ?? null)
+      } catch (err) {
+        console.error('ContactRevealPage load error:', err)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [id])
 
-  async function handleReveal() {
-    await claimsService.revealContact(id, user.id)
-    setDisclosed(true)
-  }
-
   if (loading) return <PageSpinner />
   if (!claim) return <div className="p-8 text-center text-gray-500">Claim not found.</div>
+
+  // The person viewing this page is the claimant (owner proving it's theirs)
+  // The reporter is whoever posted the found/lost item
+  const isClaimant = user?.id === claim.claimant_id
+  const reporterProfile = reporter
+  const claimantProfile = profile  // current user
+
+  // Determine card labels based on item type
+  const myLabel    = claim.item_type === 'found' ? 'Owner (You)'   : 'You'
+  const otherLabel = claim.item_type === 'found' ? 'Item Reporter / Finder' : 'Item Reporter'
 
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1 max-w-4xl mx-auto w-full px-4 sm:px-6 py-8">
+
         {/* Approval banner */}
         <div className="bg-[#D4F547]/10 border border-[#D4F547]/20 rounded-xl px-5 py-4 mb-8 flex items-center gap-3">
           <CheckCircle size={20} className="text-[#D4F547] flex-shrink-0" />
           <div>
             <p className="text-[#D4F547] font-semibold text-sm">Verification Approved ✓</p>
             <p className="text-gray-400 text-xs mt-0.5">
-              Your ownership claim has been verified. Contact details are now available for arranging the return.
+              Your ownership has been verified. Use the email below to contact the reporter and arrange collection.
             </p>
           </div>
         </div>
 
-        <h1 className="text-[#D4F547] font-bold text-2xl mb-6">Arrange Return Handoff</h1>
+        <h1 className="text-[#D4F547] font-bold text-2xl mb-2">Arrange Return Handoff</h1>
+        <p className="text-gray-500 text-sm mb-6">
+          Contact the {claim.item_type === 'found' ? 'finder' : 'reporter'} directly via email to arrange a meeting.
+        </p>
 
         {/* Contact cards */}
         <div className="grid grid-cols-1 sm:grid-cols-2 gap-5 mb-8">
-          {/* Reporter (you) */}
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-5">
-            <p className="text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-4">
-              Item Reporter (You)
-            </p>
-            <div className="flex items-center gap-3 mb-4">
-              <div className="w-10 h-10 rounded-full bg-[#D4F547] flex items-center justify-center text-black font-bold text-sm">
-                {profile?.full_name?.[0] ?? 'U'}
-              </div>
-              <div>
-                <p className="text-white font-medium text-sm">{profile?.full_name ?? 'You'}</p>
-                <p className="text-gray-500 text-xs">{profile?.email}</p>
-              </div>
-            </div>
-            <Button variant="primary" size="sm" className="w-full" icon={<MessageSquare size={14} />}>
-              Send Message
-            </Button>
-          </div>
+          <ContactCard
+            label={myLabel}
+            name={claimantProfile?.full_name}
+            email={claimantProfile?.email}
+            isYou={true}
+          />
+          <ContactCard
+            label={otherLabel}
+            name={reporterProfile?.full_name ?? 'Campus User'}
+            email={reporterProfile?.email ?? 'Contact via admin'}
+          />
+        </div>
 
-          {/* Finder */}
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-5">
-            <p className="text-[10px] font-bold tracking-widest uppercase text-gray-500 mb-4">
-              Item Finder
+        {/* How to contact tip */}
+        <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl px-5 py-4 mb-6 flex items-start gap-3">
+          <Mail size={16} className="text-[#D4F547] flex-shrink-0 mt-0.5" />
+          <div>
+            <p className="text-white text-sm font-medium mb-1">How to get your item back</p>
+            <p className="text-gray-500 text-xs leading-relaxed">
+              Click <strong className="text-white">Send Email</strong> to open your email app with their address pre-filled.
+              Introduce yourself, mention the case ID <span className="font-mono text-[#D4F547]">CASE-{claim.id.slice(-6).toUpperCase()}</span>, and agree on a time and meeting spot below.
             </p>
-            {disclosed || claim.status === 'approved' ? (
-              <>
-                <div className="flex items-center gap-3 mb-4">
-                  <div className="w-10 h-10 rounded-full bg-gray-700 flex items-center justify-center text-white font-bold text-sm">
-                    {claim.profiles?.full_name?.[0] ?? '?'}
-                  </div>
-                  <div>
-                    <p className="text-white font-medium text-sm">
-                      {claim.profiles?.full_name ?? 'Verified User'}
-                    </p>
-                    <p className="text-gray-500 text-xs">{claim.profiles?.email}</p>
-                  </div>
-                </div>
-                <Button variant="outline" size="sm" className="w-full" icon={<MessageSquare size={14} />}>
-                  Send Message
-                </Button>
-              </>
-            ) : (
-              <div className="text-center py-4">
-                <p className="text-gray-500 text-sm mb-3">Contact details are hidden</p>
-                <Button variant="outlineLime" size="sm" onClick={handleReveal}>
-                  Reveal Contact
-                </Button>
-              </div>
-            )}
           </div>
         </div>
 
@@ -134,6 +189,7 @@ export default function ContactRevealPage() {
             </p>
           </div>
         </div>
+
       </div>
     </div>
   )

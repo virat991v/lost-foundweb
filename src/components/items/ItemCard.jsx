@@ -35,6 +35,17 @@ export default function ItemCard({ item, type = 'lost' }) {
         <div className="absolute top-2 right-2">
           <Badge status={item.status} />
         </div>
+
+        {/* RETURNED stamp overlay */}
+        {item.status === 'returned' && (
+          <div className="absolute inset-0 bg-black/50 flex items-center justify-center">
+            <div className="border-4 border-green-400 rounded-lg px-4 py-2 rotate-[-15deg]">
+              <p className="text-green-400 font-black text-xl tracking-widest uppercase">
+                Returned
+              </p>
+            </div>
+          </div>
+        )}
         {/* Lost / Found type badge top-left */}
         <div className="absolute top-2 left-2">
           <span className={`text-[10px] font-bold uppercase tracking-wider px-2 py-0.5 rounded ${
