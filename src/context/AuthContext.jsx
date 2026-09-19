@@ -62,14 +62,18 @@ export function AuthProvider({ children }) {
     })
     if (error) throw error
 
-    // Phone is saved via the handle_new_user trigger from raw_user_meta_data
-    // If trigger already ran, also update directly as a safety net
-    if (phone && data?.user?.id) {
-      await new Promise((r) => setTimeout(r, 1500))
+    // Upsert profile with phone — works whether or not the trigger has run yet
+    if (data?.user?.id) {
       await supabase
         .from('profiles')
-        .update({ phone })
-        .eq('id', data.user.id)
+        .upsert({
+          id: data.user.id,
+          full_name: fullName,
+          email,
+          phone: phone || null,
+          role: 'student',
+          account_status: 'active',
+        }, { onConflict: 'id' })
     }
 
     return data
