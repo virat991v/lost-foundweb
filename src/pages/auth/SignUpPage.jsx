@@ -36,7 +36,8 @@ export default function SignUpPage() {
     const e = {}
     if (!fullName.trim()) e.fullName = 'Full name is required'
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)) e.email = 'Please enter a valid email address'
-    if (phone && !/^\+?[\d\s\-()]{7,15}$/.test(phone)) e.phone = 'Please enter a valid phone number'
+    if (!phone.trim()) e.phone = 'Phone number is required'
+    else if (!/^\+?[\d\s\-()]{7,15}$/.test(phone)) e.phone = 'Please enter a valid phone number'
     if (password.length < 8) e.password = 'Password must be at least 8 characters'
     if (password !== confirmPassword) e.confirmPassword = 'Passwords do not match'
     return e
@@ -142,7 +143,7 @@ export default function SignUpPage() {
               autoComplete="email"
             />
             <Input
-              label="Phone Number (optional)"
+              label="Phone Number"
               type="tel"
               placeholder="+91 98765 43210"
               value={phone}

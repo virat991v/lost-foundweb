@@ -62,12 +62,16 @@ export function AuthProvider({ children }) {
     })
     if (error) throw error
 
-    // Save phone to profiles table if provided
+    // Save phone — retry a couple of times to wait for trigger to create profile row
     if (phone && data?.user?.id) {
-      await supabase
-        .from('profiles')
-        .update({ phone })
-        .eq('id', data.user.id)
+      for (let i = 0; i < 3; i++) {
+        await new Promise((r) => setTimeout(r, 800))
+        const { error: updateErr } = await supabase
+          .from('profiles')
+          .update({ phone })
+          .eq('id', data.user.id)
+        if (!updateErr) break
+      }
     }
 
     return data
