@@ -62,9 +62,11 @@ export function AuthProvider({ children }) {
     })
     if (error) throw error
 
-    // Upsert profile with phone — works whether or not the trigger has run yet
+    // Upsert profile with phone immediately after signup
+    // The trigger may not have run yet (fires on email confirmation),
+    // so we upsert here to guarantee the row exists with phone set.
     if (data?.user?.id) {
-      await supabase
+      const { error: upsertError } = await supabase
         .from('profiles')
         .upsert({
           id: data.user.id,
@@ -74,6 +76,9 @@ export function AuthProvider({ children }) {
           role: 'student',
           account_status: 'active',
         }, { onConflict: 'id' })
+      if (upsertError) {
+        console.error('Profile upsert error:', upsertError)
+      }
     }
 
     return data

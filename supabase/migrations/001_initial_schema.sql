@@ -255,7 +255,7 @@ CREATE POLICY "Users can update their own profile"
 CREATE POLICY "Admins can update any profile"
   ON profiles FOR UPDATE USING (is_admin(auth.uid()));
 CREATE POLICY "Service can insert profiles"
-  ON profiles FOR INSERT WITH CHECK (auth.uid() = id);
+  ON profiles FOR INSERT WITH CHECK (true);
 
 -- ============================================================
 -- RLS POLICIES: lost_items
@@ -377,16 +377,21 @@ CREATE POLICY "System can insert disclosures"
 CREATE OR REPLACE FUNCTION handle_new_user()
 RETURNS TRIGGER AS $$
 BEGIN
-  INSERT INTO profiles (id, full_name, email, role)
+  INSERT INTO profiles (id, full_name, email, phone, role, account_status)
   VALUES (
     NEW.id,
-    COALESCE(NEW.raw_user_meta_data->>'full_name', 'Campus User'),
+    COALESCE(NEW.raw_user_meta_data->>'full_name', 'User'),
     NEW.email,
-    'student'
-  );
+    NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'phone', '')), ''),
+    'student',
+    'active'
+  )
+  ON CONFLICT (id) DO UPDATE SET
+    full_name = EXCLUDED.full_name,
+    phone     = COALESCE(EXCLUDED.phone, profiles.phone);
   RETURN NEW;
 END;
-$$ LANGUAGE plpgsql SECURITY DEFINER;
+$$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;
 
 CREATE TRIGGER on_auth_user_created
   AFTER INSERT ON auth.users
