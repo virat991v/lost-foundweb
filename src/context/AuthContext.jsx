@@ -62,16 +62,14 @@ export function AuthProvider({ children }) {
     })
     if (error) throw error
 
-    // Save phone — retry a couple of times to wait for trigger to create profile row
+    // Phone is saved via the handle_new_user trigger from raw_user_meta_data
+    // If trigger already ran, also update directly as a safety net
     if (phone && data?.user?.id) {
-      for (let i = 0; i < 3; i++) {
-        await new Promise((r) => setTimeout(r, 800))
-        const { error: updateErr } = await supabase
-          .from('profiles')
-          .update({ phone })
-          .eq('id', data.user.id)
-        if (!updateErr) break
-      }
+      await new Promise((r) => setTimeout(r, 1500))
+      await supabase
+        .from('profiles')
+        .update({ phone })
+        .eq('id', data.user.id)
     }
 
     return data
