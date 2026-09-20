@@ -251,7 +251,7 @@ CREATE POLICY "Admins can view all profiles"
 CREATE POLICY "Users can update their own profile"
   ON profiles FOR UPDATE
   USING (auth.uid() = id)
-  WITH CHECK (auth.uid() = id AND role = (SELECT role FROM profiles WHERE id = auth.uid()));
+  WITH CHECK (auth.uid() = id);
 CREATE POLICY "Admins can update any profile"
   ON profiles FOR UPDATE USING (is_admin(auth.uid()));
 CREATE POLICY "Service can insert profiles"

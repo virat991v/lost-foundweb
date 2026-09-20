@@ -46,18 +46,16 @@ export function AuthProvider({ children }) {
           // This covers: first login after email confirm, re-login, OAuth.
           // Uses UPDATE (not upsert) so it only fires when a row already exists
           // (trigger creates it; UPDATE is safe without service-role).
-          if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-            if (meta.phone) {
-              // First try UPDATE on existing row
-              const { error: updateErr } = await supabase
-                .from('profiles')
-                .update({ phone: meta.phone })
-                .eq('id', session.user.id)
-                .is('phone', null)  // only update if phone is still null
+          if ((event === 'SIGNED_IN' || event === 'USER_UPDATED') && meta.phone) {
+            // Sync phone from user_metadata into profiles every login.
+            // Runs AFTER the trigger has created the row, so UPDATE is safe.
+            const { error: updateErr } = await supabase
+              .from('profiles')
+              .update({ phone: meta.phone })
+              .eq('id', session.user.id)
 
-              if (updateErr) {
-                console.error('Phone sync error:', updateErr)
-              }
+            if (updateErr) {
+              console.error('Phone sync error:', updateErr)
             }
           }
 
@@ -78,31 +76,14 @@ export function AuthProvider({ children }) {
       email,
       password,
       options: {
+        // phone stored in user_metadata — trigger reads it on email confirmation
         data: { full_name: fullName, phone: phone || null },
         emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
     if (error) throw error
-
-    // Upsert profile with phone immediately after signup
-    // The trigger may not have run yet (fires on email confirmation),
-    // so we upsert here to guarantee the row exists with phone set.
-    if (data?.user?.id) {
-      const { error: upsertError } = await supabase
-        .from('profiles')
-        .upsert({
-          id: data.user.id,
-          full_name: fullName,
-          email,
-          phone: phone || null,
-          role: 'student',
-          account_status: 'active',
-        }, { onConflict: 'id' })
-      if (upsertError) {
-        console.error('Profile upsert error:', upsertError)
-      }
-    }
-
+    // Profile is created by the DB trigger (handle_new_user) when email is confirmed.
+    // Phone is synced on SIGNED_IN via onAuthStateChange below.
     return data
   }
 
