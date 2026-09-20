@@ -11,15 +11,15 @@ import { formatDistanceToNow } from 'date-fns'
 
 function StatsCard({ label, value, icon: Icon, desc }) {
   return (
-    <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-5">
+    <div className="card-hover group bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-5 hover:border-[#3a3a3a]">
       <div className="flex items-start justify-between mb-2">
         <p className="text-[10px] font-bold tracking-widest uppercase text-gray-500">{label}</p>
-        <div className="w-8 h-8 rounded-lg bg-[#D4F547]/10 flex items-center justify-center">
+        <div className="w-8 h-8 rounded-lg bg-[#D4F547]/10 flex items-center justify-center transition-all duration-250 group-hover:bg-[#D4F547]/18 group-hover:scale-105">
           <Icon size={15} className="text-[#D4F547]" />
         </div>
       </div>
-      <p className="text-3xl font-bold text-white mb-1">{value}</p>
-      {desc && <p className="text-gray-600 text-xs">{desc}</p>}
+      <p className="text-3xl font-bold text-white mb-1 transition-colors duration-200 group-hover:text-white/95">{value}</p>
+      {desc && <p className="text-gray-600 text-xs transition-colors duration-200 group-hover:text-gray-500">{desc}</p>}
     </div>
   )
 }
@@ -61,7 +61,7 @@ export default function DashboardPage() {
     <div className="flex flex-col min-h-full">
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8">
         {/* Header */}
-        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
+        <div className="page-enter flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-8">
           <div>
             <h1 className="text-white font-bold text-2xl">Dashboard Hub</h1>
             <p className="text-gray-500 text-sm mt-0.5">
@@ -80,7 +80,7 @@ export default function DashboardPage() {
         </div>
 
         {/* Stats */}
-        <div className="grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
+        <div className="page-enter-delay-1 grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
           <StatsCard label="My Lost Reports" value={lostItems.length} icon={FileText} desc="Total reports filed" />
           <StatsCard label="My Found Submissions" value={foundItems.length} icon={Search} desc="Items reported found" />
           <StatsCard label="Active Claims" value={activeClaims.length} icon={CheckSquare} desc="Claims in progress" />
@@ -88,9 +88,9 @@ export default function DashboardPage() {
         </div>
 
         {/* Main content */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        <div className="page-enter-delay-2 grid grid-cols-1 lg:grid-cols-2 gap-6">
           {/* Recent Activity */}
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl">
+          <div className="card-hover bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl">
             <div className="px-5 py-4 border-b border-[#2a2a2a] flex items-center gap-2">
               <Activity size={16} className="text-[#D4F547]" />
               <h2 className="text-white font-semibold text-sm">Recent Activity</h2>
@@ -127,7 +127,7 @@ export default function DashboardPage() {
           </div>
 
           {/* Active Claims */}
-          <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl">
+          <div className="card-hover bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl">
             <div className="px-5 py-4 border-b border-[#2a2a2a] flex items-center justify-between">
               <div className="flex items-center gap-2">
                 <CheckSquare size={16} className="text-[#D4F547]" />

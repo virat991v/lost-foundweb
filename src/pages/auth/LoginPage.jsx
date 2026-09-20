@@ -57,7 +57,7 @@ export default function LoginPage() {
       }}
     >
       <div className="w-full max-w-sm">
-        <div className="bg-[#111111] border border-[#2a2a2a] rounded-2xl p-8 shadow-2xl">
+        <div className="animate-scale-in bg-[#111111] border border-[#2a2a2a] rounded-2xl p-8 shadow-2xl">
           <Logo />
 
           <div className="text-center mb-8">

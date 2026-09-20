@@ -36,9 +36,26 @@ export function AuthProvider({ children }) {
 
     // Listen for auth state changes
     const { data: { subscription } } = supabase.auth.onAuthStateChange(
-      async (_event, session) => {
+      async (event, session) => {
         setUser(session?.user ?? null)
         if (session?.user) {
+          // On email confirmation, upsert profile with phone from user metadata
+          // This fires when user clicks the confirmation link
+          if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
+            const meta = session.user.user_metadata ?? {}
+            if (meta.phone || meta.full_name) {
+              await supabase
+                .from('profiles')
+                .upsert({
+                  id: session.user.id,
+                  full_name: meta.full_name || 'User',
+                  email: session.user.email,
+                  phone: meta.phone || null,
+                  role: 'student',
+                  account_status: 'active',
+                }, { onConflict: 'id' })
+            }
+          }
           const p = await fetchProfile(session.user.id)
           setProfile(p)
         } else {
@@ -57,7 +74,7 @@ export function AuthProvider({ children }) {
       password,
       options: {
         data: { full_name: fullName, phone: phone || null },
-        emailRedirectTo: `${window.location.origin}/login`,
+        emailRedirectTo: `${window.location.origin}/auth/callback`,
       },
     })
     if (error) throw error

@@ -88,7 +88,7 @@ export default function SignUpPage() {
             <p className="text-white font-semibold text-sm mb-6">{email}</p>
 
             <p className="text-gray-500 text-xs mb-6">
-              Open Gmail, find the email from lost-found and click the link to activate your account. Check spam if you don't see it.
+              Open your inbox, find the email from lost-found and click the verification link. Check spam if you don't see it within a minute.
             </p>
 
             <Link
@@ -108,7 +108,7 @@ export default function SignUpPage() {
       style={{ backgroundImage: `radial-gradient(circle at 1px 1px, #1a1a1a 1px, transparent 0)`, backgroundSize: '32px 32px' }}
     >
       <div className="w-full max-w-sm">
-        <div className="bg-[#111111] border border-[#2a2a2a] rounded-2xl p-8 shadow-2xl">
+        <div className="animate-scale-in bg-[#111111] border border-[#2a2a2a] rounded-2xl p-8 shadow-2xl">
           <Logo />
 
           <div className="text-center mb-6">
