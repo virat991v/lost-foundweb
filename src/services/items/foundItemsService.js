@@ -101,14 +101,4 @@ export const foundItemsService = {
     return data
   },
 
-  // Combined browse: merge lost + found items for the Browse page
-  async getAllItems({ page = 1, category, location, search, type } = {}) {
-    const filters = { page, category, location, search }
-    if (type === 'lost' || !type) {
-      const lost = await this.getAll ? null : null
-      void lost
-    }
-    // Return found items by default for browse
-    return this.getAll(filters)
-  },
 }

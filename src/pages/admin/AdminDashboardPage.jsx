@@ -55,7 +55,7 @@ export default function AdminDashboardPage() {
         <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-4 mb-6">
           <div>
             <h1 className="text-white font-bold text-xl">Dashboard Overview</h1>
-            <p className="text-gray-500 text-sm mt-0.5">Stanford University (Admin)</p>
+            <p className="text-gray-500 text-sm mt-0.5">Campus Lost &amp; Found — Admin</p>
           </div>
           <div className="flex items-center gap-3">
             <div className="relative hidden sm:block">

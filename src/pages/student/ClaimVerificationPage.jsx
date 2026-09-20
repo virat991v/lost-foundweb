@@ -19,9 +19,14 @@ export default function ClaimVerificationPage() {
 
   useEffect(() => {
     async function load() {
-      const data = await claimsService.getById(id)
-      setClaim(data)
-      setLoading(false)
+      try {
+        const data = await claimsService.getById(id)
+        setClaim(data)
+      } catch (err) {
+        console.error('ClaimVerificationPage load error:', err)
+      } finally {
+        setLoading(false)
+      }
     }
     load()
   }, [id])

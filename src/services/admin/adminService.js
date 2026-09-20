@@ -80,23 +80,23 @@ export const adminService = {
 
   // ── Reports ────────────────────────────────────────────────
   async getAllReports({ page = 1, type, status, search, limit = 20 } = {}) {
-    const lostQuery = supabase
+    let lostQuery = supabase
       .from('lost_items')
       .select('*, profiles(id, full_name, email)', { count: 'exact' })
       .order('created_at', { ascending: false })
 
-    const foundQuery = supabase
+    let foundQuery = supabase
       .from('found_items')
       .select('*, profiles(id, full_name, email)', { count: 'exact' })
       .order('created_at', { ascending: false })
 
     if (status) {
-      lostQuery.eq('status', status)
-      foundQuery.eq('status', status)
+      lostQuery = lostQuery.eq('status', status)
+      foundQuery = foundQuery.eq('status', status)
     }
     if (search) {
-      lostQuery.or(`title.ilike.%${search}%`)
-      foundQuery.or(`title.ilike.%${search}%`)
+      lostQuery = lostQuery.or(`title.ilike.%${search}%`)
+      foundQuery = foundQuery.or(`title.ilike.%${search}%`)
     }
 
     const [lostResult, foundResult] = await Promise.all([
