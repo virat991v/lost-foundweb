@@ -71,7 +71,6 @@ export default function ItemDetailsPage() {
   const isOwner = user?.id === item.user_id
   const isFound = type === 'found'
 
-  // Label & messaging depends on item type
   const claimButtonLabel = isFound
     ? 'This is Mine — Claim It Back'
     : 'I Found This — I Have It'
@@ -82,8 +81,9 @@ export default function ItemDetailsPage() {
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8">
+
         {/* Breadcrumb */}
-        <div className="flex items-center gap-1.5 text-sm text-gray-500 mb-6">
+        <div className="page-enter flex items-center gap-1.5 text-sm text-gray-500 mb-6">
           <Link to="/dashboard" className="hover:text-white transition-colors">Dashboard</Link>
           <ChevronRight size={14} />
           <Link to="/browse" className="hover:text-white transition-colors">Browse</Link>
@@ -93,12 +93,16 @@ export default function ItemDetailsPage() {
 
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-10">
           {/* Left — photo */}
-          <div>
-            <div className="aspect-square bg-[#111111] rounded-xl overflow-hidden border border-[#2a2a2a] flex items-center justify-center mb-3">
+          <div className="page-enter-delay-1">
+            <div className="aspect-square bg-[#111111] rounded-xl overflow-hidden border border-[#2a2a2a] flex items-center justify-center mb-3 group">
               {item.photo_url ? (
-                <img src={item.photo_url} alt={item.title} className="w-full h-full object-cover" />
+                <img
+                  src={item.photo_url}
+                  alt={item.title}
+                  className="w-full h-full object-cover transition-transform duration-500 ease-smooth group-hover:scale-[1.03]"
+                />
               ) : (
-                <div className="flex flex-col items-center gap-3 text-gray-700">
+                <div className="flex flex-col items-center gap-3 text-gray-700 transition-colors duration-200 group-hover:text-gray-600">
                   <svg width="60" height="60" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.5">
                     <rect x="3" y="3" width="18" height="18" rx="2" />
                     <circle cx="8.5" cy="8.5" r="1.5" />
@@ -111,7 +115,7 @@ export default function ItemDetailsPage() {
           </div>
 
           {/* Right — details */}
-          <div className="flex flex-col">
+          <div className="page-enter-delay-2 flex flex-col">
             <div className="flex items-center gap-2 mb-3">
               <Badge status={item.status} />
               <span className={`text-xs font-bold uppercase tracking-wider px-2 py-0.5 rounded border ${
@@ -170,7 +174,8 @@ export default function ItemDetailsPage() {
             {/* ── RETURNED stamp ── */}
             {item.status === 'returned' && (
               <div className="mt-auto mb-4">
-                <div className="border-4 border-green-400 rounded-xl px-6 py-4 flex items-center justify-center gap-3 rotate-[-2deg]">
+                <div className="border-4 border-green-400 rounded-xl px-6 py-4 flex items-center justify-center gap-3 rotate-[-2deg]
+                  animate-[scale-in_0.4s_cubic-bezier(0.34,1.56,0.64,1)]">
                   <svg width="28" height="28" viewBox="0 0 24 24" fill="none" stroke="#4ade80" strokeWidth="2.5">
                     <polyline points="20 6 9 17 4 12" />
                   </svg>
@@ -182,10 +187,11 @@ export default function ItemDetailsPage() {
               </div>
             )}
 
-            {/* ── Claim / Get Item Back section ── */}
+            {/* ── Claim section ── */}
             {!isOwner && item.status === 'active' && (
               <div className="mt-auto">
-                <div className="bg-[#D4F547]/5 border border-[#D4F547]/20 rounded-xl p-4 mb-4">
+                <div className="bg-[#D4F547]/5 border border-[#D4F547]/20 rounded-xl p-4 mb-4
+                  transition-colors duration-200 hover:bg-[#D4F547]/8 hover:border-[#D4F547]/30">
                   <p className="text-[#D4F547] text-xs font-bold uppercase tracking-wider mb-1">
                     {isFound ? 'Is this your item?' : 'Do you have this item?'}
                   </p>
@@ -224,7 +230,7 @@ export default function ItemDetailsPage() {
 
             <div className="flex gap-4 mt-4">
               <button
-                className="flex items-center gap-1.5 text-gray-400 text-sm hover:text-white transition-colors"
+                className="flex items-center gap-1.5 text-gray-400 text-sm hover:text-white transition-colors duration-200"
                 onClick={() => navigator.clipboard?.writeText(window.location.href)}
               >
                 <Share2 size={14} />
@@ -236,7 +242,7 @@ export default function ItemDetailsPage() {
 
         {/* ── How it works ── */}
         {!isOwner && item.status === 'active' && (
-          <div className="bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-8">
+          <div className="page-enter-delay-2 bg-[#111111] border border-[#2a2a2a] rounded-xl p-6 mb-8">
             <h3 className="text-white font-semibold text-sm mb-5">How to get your item back</h3>
             <div className="grid grid-cols-1 sm:grid-cols-4 gap-4">
               {[
@@ -244,8 +250,12 @@ export default function ItemDetailsPage() {
                 { icon: ShieldCheck,   step: '2', title: 'Admin Reviews',  desc: 'Campus admin verifies your answers against the private item details.' },
                 { icon: CheckCircle,   step: '3', title: 'Get Approved',   desc: 'Once verified, your contact info is shared with the finder/reporter.' },
                 { icon: Package,       step: '4', title: 'Collect Item',   desc: 'Meet at a campus safe zone and confirm the handoff in the app.' },
-              ].map(({ icon: Icon, step, title, desc }) => (
-                <div key={step} className="flex flex-col items-start gap-2">
+              ].map(({ icon: Icon, step, title, desc }, i) => (
+                <div
+                  key={step}
+                  className="flex flex-col items-start gap-2 opacity-0 animate-[fade-up_0.35s_ease-out_forwards]"
+                  style={{ animationDelay: `${0.1 + i * 0.08}s` }}
+                >
                   <div className="flex items-center gap-2">
                     <span className="w-6 h-6 rounded-full bg-[#D4F547]/20 text-[#D4F547] text-xs font-bold flex items-center justify-center flex-shrink-0">
                       {step}

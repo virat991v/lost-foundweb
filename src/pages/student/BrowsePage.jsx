@@ -12,6 +12,8 @@ export default function BrowsePage() {
   const [page, setPage] = useState(1)
   const [loading, setLoading] = useState(false)
   const [filters, setFilters] = useState({})
+  // key bumped on every search/tab-switch to re-trigger grid entrance animation
+  const [gridKey, setGridKey] = useState(0)
 
   const totalPages = Math.ceil(count / PAGINATION_LIMIT)
 
@@ -41,6 +43,7 @@ export default function BrowsePage() {
       data.sort((a, b) => new Date(b.created_at) - new Date(a.created_at))
       setItems(data)
       setCount(total)
+      setGridKey((k) => k + 1)
     } catch (err) {
       console.error(err)
     } finally {
@@ -71,30 +74,34 @@ export default function BrowsePage() {
     load(newFilters, 1)
   }
 
+  const tabs = [
+    { key: 'all',   label: 'All Items' },
+    { key: 'lost',  label: '🔴 Lost' },
+    { key: 'found', label: '🟢 Found' },
+  ]
+
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1 max-w-7xl mx-auto w-full px-4 sm:px-6 py-8">
-        <div className="mb-6">
-          <h1 className="text-[#D4F547] font-bold text-2xl mb-1">Browse Lost & Found Database</h1>
+
+        {/* Header */}
+        <div className="page-enter mb-6">
+          <h1 className="text-[#D4F547] font-bold text-2xl mb-1">Browse Lost &amp; Found Database</h1>
           <p className="text-gray-500 text-sm">
             Showing {items.length} of {count} total reports
           </p>
         </div>
 
         {/* Lost / Found / All tabs */}
-        <div className="flex gap-1 mb-6 bg-[#111111] border border-[#2a2a2a] rounded-xl p-1 w-fit">
-          {[
-            { key: 'all',   label: 'All Items' },
-            { key: 'lost',  label: '🔴 Lost' },
-            { key: 'found', label: '🟢 Found' },
-          ].map(({ key, label }) => (
+        <div className="page-enter-delay-1 flex gap-1 mb-6 bg-[#111111] border border-[#2a2a2a] rounded-xl p-1 w-fit">
+          {tabs.map(({ key, label }) => (
             <button
               key={key}
               onClick={() => handleTabChange(key)}
-              className={`px-5 py-2 rounded-lg text-sm font-medium transition-colors ${
+              className={`relative px-5 py-2 rounded-lg text-sm font-medium transition-all duration-200 ${
                 activeType === key
-                  ? 'bg-[#D4F547] text-black'
-                  : 'text-gray-400 hover:text-white'
+                  ? 'bg-[#D4F547] text-black shadow-[0_0_12px_rgba(212,245,71,0.2)]'
+                  : 'text-gray-400 hover:text-white hover:bg-[#1a1a1a]'
               }`}
             >
               {label}
@@ -102,14 +109,18 @@ export default function BrowsePage() {
           ))}
         </div>
 
-        <div className="mb-6">
+        {/* Filters */}
+        <div className="page-enter-delay-2 mb-6">
           <SearchFilters onSearch={handleSearch} loading={loading} />
         </div>
 
-        <ItemGrid items={items} loading={loading} />
+        {/* Grid — re-keyed to replay entrance on every new result set */}
+        <div key={gridKey} className={loading ? 'opacity-50 pointer-events-none transition-opacity duration-200' : 'transition-opacity duration-200'}>
+          <ItemGrid items={items} loading={loading} />
+        </div>
 
         {totalPages > 1 && (
-          <div className="flex justify-center mt-8">
+          <div className="flex justify-center mt-8 animate-fade-up">
             <Pagination
               currentPage={page}
               totalPages={totalPages}

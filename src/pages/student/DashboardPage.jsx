@@ -7,6 +7,7 @@ import { foundItemsService } from '../../services/items/foundItemsService'
 import { claimsService } from '../../services/claims/claimsService'
 import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
+import { SkeletonStatsCard, SkeletonRow } from '../../components/ui/SkeletonCard'
 import { formatDistanceToNow } from 'date-fns'
 
 function StatsCard({ label, value, icon: Icon, desc }) {
@@ -81,10 +82,16 @@ export default function DashboardPage() {
 
         {/* Stats */}
         <div className="page-enter-delay-1 grid grid-cols-2 lg:grid-cols-4 gap-4 mb-8">
-          <StatsCard label="My Lost Reports" value={lostItems.length} icon={FileText} desc="Total reports filed" />
-          <StatsCard label="My Found Submissions" value={foundItems.length} icon={Search} desc="Items reported found" />
-          <StatsCard label="Active Claims" value={activeClaims.length} icon={CheckSquare} desc="Claims in progress" />
-          <StatsCard label="Items Returned" value={returned} icon={RotateCcw} desc="Successfully reunited" />
+          {loading ? (
+            [1,2,3,4].map((i) => <SkeletonStatsCard key={i} />)
+          ) : (
+            <>
+              <StatsCard label="My Lost Reports"      value={lostItems.length}    icon={FileText}     desc="Total reports filed" />
+              <StatsCard label="My Found Submissions" value={foundItems.length}   icon={Search}       desc="Items reported found" />
+              <StatsCard label="Active Claims"        value={activeClaims.length} icon={CheckSquare}  desc="Claims in progress" />
+              <StatsCard label="Items Returned"       value={returned}            icon={RotateCcw}    desc="Successfully reunited" />
+            </>
+          )}
         </div>
 
         {/* Main content */}
@@ -96,7 +103,9 @@ export default function DashboardPage() {
               <h2 className="text-white font-semibold text-sm">Recent Activity</h2>
             </div>
             {loading ? (
-              <div className="p-6 text-center text-gray-500 text-sm">Loading…</div>
+              <div className="divide-y divide-[#1f1f1f]">
+                {[1,2,3].map((i) => <SkeletonRow key={i} />)}
+              </div>
             ) : recentActivity.length === 0 ? (
               <div className="p-8 text-center">
                 <p className="text-gray-500 text-sm mb-3">No activity yet</p>
@@ -106,8 +115,11 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="divide-y divide-[#1f1f1f]">
-                {recentActivity.map(({ type, item }) => (
-                  <div key={item.id} className="px-5 py-3 flex items-start gap-3">
+                  {recentActivity.map(({ type, item }, i) => (
+                    <div key={item.id}
+                      className="px-5 py-3 flex items-start gap-3 opacity-0 animate-[fade-up_0.35s_ease-out_forwards]"
+                      style={{ animationDelay: `${i * 0.06}s` }}
+                    >
                     <div className={`w-2 h-2 rounded-full mt-1.5 flex-shrink-0 ${
                       type === 'lost' ? 'bg-orange-400' : type === 'found' ? 'bg-green-400' : 'bg-blue-400'
                     }`} />
@@ -138,7 +150,9 @@ export default function DashboardPage() {
               </Link>
             </div>
             {loading ? (
-              <div className="p-6 text-center text-gray-500 text-sm">Loading…</div>
+              <div className="divide-y divide-[#1f1f1f]">
+                {[1,2,3].map((i) => <SkeletonRow key={i} />)}
+              </div>
             ) : activeClaims.length === 0 ? (
               <div className="p-8 text-center">
                 <p className="text-gray-500 text-sm mb-3">No active claims</p>
@@ -148,8 +162,11 @@ export default function DashboardPage() {
               </div>
             ) : (
               <div className="divide-y divide-[#1f1f1f]">
-                {activeClaims.map((claim) => (
-                  <div key={claim.id} className="px-5 py-3 flex items-center justify-between gap-3">
+                {activeClaims.map((claim, i) => (
+                  <div key={claim.id}
+                    className="px-5 py-3 flex items-center justify-between gap-3 opacity-0 animate-[fade-up_0.35s_ease-out_forwards]"
+                    style={{ animationDelay: `${i * 0.06}s` }}
+                  >
                     <div>
                       <p className="text-[#D4F547] text-xs font-mono font-medium">
                         CASE-{claim.id.slice(-6).toUpperCase()}

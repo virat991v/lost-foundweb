@@ -7,7 +7,8 @@ import Badge from '../../components/ui/Badge'
 import Button from '../../components/ui/Button'
 import Pagination from '../../components/ui/Pagination'
 import Select from '../../components/ui/Select'
-import { ShieldCheck, ShieldX, User, FileText, Lock, ExternalLink } from 'lucide-react'
+import { SkeletonTableRow } from '../../components/ui/SkeletonCard'
+import { ShieldCheck, ShieldX, User, FileText, Lock, ExternalLink, X } from 'lucide-react'
 import { format } from 'date-fns'
 
 const STATUS_OPTIONS = [
@@ -47,9 +48,10 @@ export default function AdminOwnershipClaimsPage() {
   const [loading, setLoading] = useState(true)
   const [status, setStatus] = useState('')
   const [selected, setSelected] = useState(null)
-  const [itemDetail, setItemDetail] = useState(null)  // the reported item with private_verification
+  const [itemDetail, setItemDetail] = useState(null)
   const [loadingItem, setLoadingItem] = useState(false)
   const [adminNotes, setAdminNotes] = useState('')
+  const [panelVisible, setPanelVisible] = useState(false)
 
   const totalPages = Math.ceil(count / 20)
 
@@ -64,10 +66,16 @@ export default function AdminOwnershipClaimsPage() {
   useEffect(() => { load() }, []) // eslint-disable-line
 
   async function handleSelect(claim) {
+    // Animate panel out then back in for a new selection
+    if (selected && selected.id !== claim.id) {
+      setPanelVisible(false)
+      await new Promise((r) => setTimeout(r, 150))
+    }
     setSelected(claim)
     setAdminNotes(claim.admin_notes ?? '')
     setItemDetail(null)
     setLoadingItem(true)
+    setPanelVisible(true)
     try {
       const svc = claim.item_type === 'lost' ? lostItemsService : foundItemsService
       const item = await svc.getById(claim.item_id)
@@ -79,20 +87,23 @@ export default function AdminOwnershipClaimsPage() {
     }
   }
 
+  function handleClosePanel() {
+    setPanelVisible(false)
+    setTimeout(() => { setSelected(null); setItemDetail(null) }, 200)
+  }
+
   async function handleApprove(claimId) {
     await adminService.approveClaim(claimId, profile?.id, adminNotes)
     await adminService.logActivity(profile?.id, 'Approved claim', 'claim', claimId)
     load()
-    setSelected(null)
-    setItemDetail(null)
+    handleClosePanel()
   }
 
   async function handleReject(claimId) {
     await adminService.rejectClaim(claimId, profile?.id, adminNotes)
     await adminService.logActivity(profile?.id, 'Rejected claim', 'claim', claimId)
     load()
-    setSelected(null)
-    setItemDetail(null)
+    handleClosePanel()
   }
 
   const verif = selected?.verification_response ?? {}
@@ -100,20 +111,26 @@ export default function AdminOwnershipClaimsPage() {
   return (
     <div className="flex flex-col min-h-full">
       <div className="flex-1 px-6 py-6">
-        <div className="flex items-center justify-between mb-5">
+
+        {/* Header */}
+        <div className="page-enter flex items-center justify-between mb-5">
           <div>
             <h1 className="text-white font-bold text-xl">Ownership Claims</h1>
             <p className="text-gray-500 text-sm">{count} total claims</p>
           </div>
           <div className="w-44">
-            <Select options={STATUS_OPTIONS} value={status} onChange={(e) => { setStatus(e.target.value); load(1) }} />
+            <Select
+              options={STATUS_OPTIONS}
+              value={status}
+              onChange={(e) => { setStatus(e.target.value); load(1) }}
+            />
           </div>
         </div>
 
         <div className="flex gap-5 items-start">
           {/* Claims table */}
           <div className="flex-1 min-w-0">
-            <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden mb-4">
+            <div className="page-enter-delay-1 bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl overflow-hidden mb-4">
               <table className="w-full text-sm">
                 <thead>
                   <tr className="border-b border-[#2a2a2a] text-[10px] font-bold tracking-widest uppercase text-gray-500">
@@ -127,14 +144,18 @@ export default function AdminOwnershipClaimsPage() {
                 </thead>
                 <tbody className="divide-y divide-[#1f1f1f]">
                   {loading ? (
-                    <tr><td colSpan={6} className="text-center py-8 text-gray-500">Loading…</td></tr>
+                    [1,2,3,4,5].map((i) => <SkeletonTableRow key={i} />)
                   ) : !claims.length ? (
                     <tr><td colSpan={6} className="text-center py-8 text-gray-500">No claims found</td></tr>
-                  ) : claims.map((claim) => (
+                  ) : claims.map((claim, i) => (
                     <tr
                       key={claim.id}
                       onClick={() => handleSelect(claim)}
-                      className={`cursor-pointer hover:bg-[#1f1f1f] transition-colors ${selected?.id === claim.id ? 'bg-[#D4F547]/5 border-l-2 border-l-[#D4F547]' : ''}`}
+                      className={`cursor-pointer transition-all duration-200
+                        opacity-0 animate-[fade-up_0.3s_ease-out_forwards]
+                        hover:bg-[#222]
+                        ${selected?.id === claim.id ? 'bg-[#D4F547]/5 border-l-2 border-l-[#D4F547]' : ''}`}
+                      style={{ animationDelay: `${i * 0.04}s` }}
                     >
                       <td className="px-4 py-3">
                         <span className="text-[#D4F547] font-mono text-xs">
@@ -153,11 +174,9 @@ export default function AdminOwnershipClaimsPage() {
                       <td className="px-4 py-3"><Badge status={claim.status} /></td>
                       <td className="px-4 py-3">
                         {claim.status === 'under_verification' && (
-                          <div className="flex gap-2">
-                            <Button variant="primary" size="sm" onClick={(e) => { e.stopPropagation(); handleSelect(claim); }}>
-                              Review
-                            </Button>
-                          </div>
+                          <Button variant="primary" size="sm" onClick={(e) => { e.stopPropagation(); handleSelect(claim) }}>
+                            Review
+                          </Button>
                         )}
                       </td>
                     </tr>
@@ -172,17 +191,28 @@ export default function AdminOwnershipClaimsPage() {
             )}
           </div>
 
-          {/* Detail panel */}
+          {/* Detail panel — slides in from right */}
           {selected && (
-            <div className="w-[420px] flex-shrink-0 flex flex-col gap-4">
-
+            <div
+              className={`w-[420px] flex-shrink-0 flex flex-col gap-4 transition-all duration-200 ease-smooth
+                ${panelVisible ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-4'}`}
+            >
               {/* Header */}
               <div className="bg-[#1a1a1a] border border-[#2a2a2a] rounded-xl p-4">
                 <div className="flex items-center justify-between mb-2">
                   <p className="text-[#D4F547] font-mono font-bold text-sm">
                     CASE-{selected.id.slice(-6).toUpperCase()}
                   </p>
-                  <Badge status={selected.status} />
+                  <div className="flex items-center gap-2">
+                    <Badge status={selected.status} />
+                    <button
+                      onClick={handleClosePanel}
+                      className="text-gray-500 hover:text-white transition-colors duration-200 p-0.5 rounded"
+                      aria-label="Close panel"
+                    >
+                      <X size={14} />
+                    </button>
+                  </div>
                 </div>
                 <div className="flex items-center gap-2 text-gray-400 text-xs">
                   <User size={12} />
@@ -194,10 +224,10 @@ export default function AdminOwnershipClaimsPage() {
                 </div>
               </div>
 
-              {/* Item info + private verification (what reporter wrote) */}
+              {/* Reporter's private verification */}
               <Section label="🔒 Reporter's Private Verification (Secret)">
                 {loadingItem ? (
-                  <p className="text-gray-500 text-sm">Loading item details…</p>
+                  <p className="text-gray-500 text-sm animate-pulse">Loading item details…</p>
                 ) : itemDetail ? (
                   <>
                     <div className="mb-3">
@@ -229,22 +259,13 @@ export default function AdminOwnershipClaimsPage() {
                 )}
               </Section>
 
-              {/* Claimant's verification answers */}
+              {/* Claimant's answers */}
               <Section label="📝 Claimant's Verification Answers">
                 {selected.verification_response ? (
                   <>
-                    <AnswerRow
-                      question="Q1: Describe the item in detail"
-                      answer={verif.q1}
-                    />
-                    <AnswerRow
-                      question="Q2: Distinguishing marks or unique features"
-                      answer={verif.q2}
-                    />
-                    <AnswerRow
-                      question="Q3: When and where did you lose it?"
-                      answer={verif.q3}
-                    />
+                    <AnswerRow question="Q1: Describe the item in detail" answer={verif.q1} />
+                    <AnswerRow question="Q2: Distinguishing marks or unique features" answer={verif.q2} />
+                    <AnswerRow question="Q3: When and where did you lose it?" answer={verif.q3} />
                     {selected.proof_url && (
                       <a
                         href={selected.proof_url}
@@ -271,7 +292,8 @@ export default function AdminOwnershipClaimsPage() {
                   onChange={(e) => setAdminNotes(e.target.value)}
                   placeholder="Add notes about this decision (visible to claimant)..."
                   rows={3}
-                  className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-white text-sm placeholder-gray-600 outline-none focus:border-[#D4F547] transition-colors resize-none"
+                  className="w-full bg-[#1a1a1a] border border-[#2a2a2a] rounded-lg px-3 py-2 text-white text-sm
+                    placeholder-gray-600 outline-none focus:border-[#D4F547] transition-colors resize-none"
                 />
               </Section>
 
@@ -280,14 +302,17 @@ export default function AdminOwnershipClaimsPage() {
                 <div className="flex flex-col gap-2">
                   <button
                     onClick={() => handleApprove(selected.id)}
-                    className="w-full flex items-center justify-center gap-2 bg-[#D4F547] hover:bg-[#c2e040] text-black font-bold py-3 rounded-xl transition-colors"
+                    className="w-full flex items-center justify-center gap-2 bg-[#D4F547] hover:bg-[#c2e040]
+                      text-black font-bold py-3 rounded-xl transition-all duration-200 active:scale-[0.98]
+                      hover:shadow-[0_0_14px_rgba(212,245,71,0.25)]"
                   >
                     <ShieldCheck size={16} />
                     Approve — Answers Match
                   </button>
                   <button
                     onClick={() => handleReject(selected.id)}
-                    className="w-full flex items-center justify-center gap-2 border border-red-500 text-red-400 hover:bg-red-500/10 font-bold py-3 rounded-xl transition-colors"
+                    className="w-full flex items-center justify-center gap-2 border border-red-500 text-red-400
+                      hover:bg-red-500/10 font-bold py-3 rounded-xl transition-all duration-200 active:scale-[0.98]"
                   >
                     <ShieldX size={16} />
                     Reject — Answers Don't Match
@@ -305,7 +330,6 @@ export default function AdminOwnershipClaimsPage() {
                   {selected.admin_notes && <p className="text-xs mt-1 opacity-80">{selected.admin_notes}</p>}
                 </div>
               )}
-
             </div>
           )}
         </div>
