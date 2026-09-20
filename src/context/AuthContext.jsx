@@ -39,23 +39,28 @@ export function AuthProvider({ children }) {
       async (event, session) => {
         setUser(session?.user ?? null)
         if (session?.user) {
-          // On email confirmation, upsert profile with phone from user metadata
-          // This fires when user clicks the confirmation link
+          const meta = session.user.user_metadata ?? {}
+
+          // On every sign-in or email confirmation:
+          // Sync phone from user_metadata → profiles row.
+          // This covers: first login after email confirm, re-login, OAuth.
+          // Uses UPDATE (not upsert) so it only fires when a row already exists
+          // (trigger creates it; UPDATE is safe without service-role).
           if (event === 'SIGNED_IN' || event === 'USER_UPDATED') {
-            const meta = session.user.user_metadata ?? {}
-            if (meta.phone || meta.full_name) {
-              await supabase
+            if (meta.phone) {
+              // First try UPDATE on existing row
+              const { error: updateErr } = await supabase
                 .from('profiles')
-                .upsert({
-                  id: session.user.id,
-                  full_name: meta.full_name || 'User',
-                  email: session.user.email,
-                  phone: meta.phone || null,
-                  role: 'student',
-                  account_status: 'active',
-                }, { onConflict: 'id' })
+                .update({ phone: meta.phone })
+                .eq('id', session.user.id)
+                .is('phone', null)  // only update if phone is still null
+
+              if (updateErr) {
+                console.error('Phone sync error:', updateErr)
+              }
             }
           }
+
           const p = await fetchProfile(session.user.id)
           setProfile(p)
         } else {

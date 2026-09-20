@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useState, useRef } from 'react'
 import { Link, useNavigate } from 'react-router-dom'
 import { Eye, EyeOff, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
@@ -19,6 +19,10 @@ function Logo() {
 export default function SignUpPage() {
   const { signUp } = useAuth()
   const navigate = useNavigate()
+
+  const phoneRef = useRef(null)
+  const passwordRef = useRef(null)
+  const confirmRef = useRef(null)
 
   const [fullName, setFullName] = useState('')
   const [phone, setPhone] = useState('')
@@ -131,6 +135,8 @@ export default function SignUpPage() {
               onChange={(e) => setFullName(e.target.value)}
               error={fieldErrors.fullName}
               required
+              tabIndex={1}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); phoneRef.current?.focus() } }}
             />
             <Input
               label="Email Address"
@@ -141,6 +147,8 @@ export default function SignUpPage() {
               error={fieldErrors.email}
               required
               autoComplete="email"
+              tabIndex={2}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); phoneRef.current?.focus() } }}
             />
             <Input
               label="Phone Number"
@@ -150,19 +158,25 @@ export default function SignUpPage() {
               onChange={(e) => setPhone(e.target.value)}
               error={fieldErrors.phone}
               autoComplete="tel"
+              tabIndex={3}
+              ref={phoneRef}
+              onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); passwordRef.current?.focus() } }}
             />
             <div className="flex flex-col gap-1.5">
               <label className="text-sm font-medium text-gray-300">Password</label>
               <div className="relative">
                 <input
+                  ref={passwordRef}
                   type={showPassword ? 'text' : 'password'}
                   placeholder="Min 8 characters"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
                   required
+                  tabIndex={4}
+                  onKeyDown={(e) => { if (e.key === 'Enter') { e.preventDefault(); confirmRef.current?.focus() } }}
                   className={`w-full bg-[#0a0a0a] border rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 outline-none focus:border-[#D4F547] transition-colors pr-10 ${fieldErrors.password ? 'border-red-500' : 'border-[#2a2a2a]'}`}
                 />
-                <button type="button" onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <button type="button" tabIndex={-1} onClick={() => setShowPassword(!showPassword)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
                   {showPassword ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
@@ -172,14 +186,16 @@ export default function SignUpPage() {
               <label className="text-sm font-medium text-gray-300">Confirm Password</label>
               <div className="relative">
                 <input
+                  ref={confirmRef}
                   type={showConfirm ? 'text' : 'password'}
                   placeholder="Re-enter password"
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
+                  tabIndex={5}
                   className={`w-full bg-[#0a0a0a] border rounded-lg px-3 py-2.5 text-white text-sm placeholder-gray-600 outline-none focus:border-[#D4F547] transition-colors pr-10 ${fieldErrors.confirmPassword ? 'border-red-500' : 'border-[#2a2a2a]'}`}
                 />
-                <button type="button" onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
+                <button type="button" tabIndex={-1} onClick={() => setShowConfirm(!showConfirm)} className="absolute right-3 top-1/2 -translate-y-1/2 text-gray-500">
                   {showConfirm ? <EyeOff size={16} /> : <Eye size={16} />}
                 </button>
               </div>
