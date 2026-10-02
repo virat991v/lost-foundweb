@@ -5,7 +5,7 @@ import PageTransition from '../components/ui/PageTransition'
 
 export default function StudentLayout() {
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <Navbar />
       <main className="flex-1 flex flex-col">
         <PageTransition>

@@ -2,6 +2,7 @@ import { useState } from 'react'
 import { Link, useNavigate, useLocation } from 'react-router-dom'
 import { Eye, EyeOff, Search } from 'lucide-react'
 import { useAuth } from '../../context/AuthContext'
+import { supabase } from '../../lib/supabase'
 import Button from '../../components/ui/Button'
 import Input from '../../components/ui/Input'
 
@@ -22,7 +23,7 @@ export default function LoginPage() {
   const { login } = useAuth()
   const navigate = useNavigate()
   const location = useLocation()
-  const from = location.state?.from?.pathname ?? '/dashboard'
+  const from = location.state?.from?.pathname ?? null
 
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
@@ -36,7 +37,15 @@ export default function LoginPage() {
     setLoading(true)
     try {
       await login(email, password)
-      navigate(from, { replace: true })
+      // Fetch profile to determine role-based redirect
+      const { data: { user } } = await supabase.auth.getUser()
+      const { data: profile } = await supabase
+        .from('profiles')
+        .select('role')
+        .eq('id', user.id)
+        .maybeSingle()
+      const defaultDest = profile?.role === 'admin' ? '/admin' : '/dashboard'
+      navigate(from ?? defaultDest, { replace: true })
     } catch (err) {
       const msg = err.message ?? ''
       if (msg.toLowerCase().includes('email not confirmed')) {
@@ -50,12 +59,7 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex items-center justify-center px-4"
-      style={{
-        backgroundImage: `radial-gradient(circle at 1px 1px, #1a1a1a 1px, transparent 0)`,
-        backgroundSize: '32px 32px',
-      }}
-    >
+    <div className="min-h-screen flex items-center justify-center px-4">
       <div className="w-full max-w-sm">
         <div className="animate-scale-in bg-[#111111] border border-[#2a2a2a] rounded-2xl p-8 shadow-2xl">
           <Logo />

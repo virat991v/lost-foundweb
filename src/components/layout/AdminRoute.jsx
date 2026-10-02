@@ -11,12 +11,12 @@ export default function AdminRoute({ children }) {
     return <Navigate to="/login" replace />
   }
 
-  if (profile && profile.role !== 'admin') {
+  // Profile is still being fetched after auth
+  if (!profile) return <PageSpinner />
+
+  if (profile.role !== 'admin') {
     return <Navigate to="/dashboard" replace />
   }
-
-  // Still loading profile
-  if (!profile) return <PageSpinner />
 
   return children
 }

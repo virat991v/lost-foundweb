@@ -4,6 +4,7 @@ import ProtectedRoute from './components/layout/ProtectedRoute'
 import AdminRoute from './components/layout/AdminRoute'
 import StudentLayout from './layouts/StudentLayout'
 import AdminLayout from './layouts/AdminLayout'
+import GhostEther from './components/ui/ghost-ether'
 
 // Public
 import LandingPage from './pages/public/LandingPage'
@@ -37,6 +38,33 @@ import AdminActivityLogPage from './pages/admin/AdminActivityLogPage'
 
 export default function App() {
   return (
+    <div className="relative min-h-screen bg-[#0a0a0a]">
+      {/* ── Global ambient background — mounted once, never remounts on route change ── */}
+      <div className="fixed inset-0 z-0 pointer-events-none touch-none" aria-hidden="true">
+        <GhostEther
+          colors={["#D4F547", "#7B2CBF", "#3F37C9", "#00F5D4"]}
+          mouseForce={18}
+          cursorSize={70}
+          isViscous={true}
+          viscous={25}
+          iterationsViscous={20}
+          iterationsPoisson={20}
+          resolution={0.4}
+          isBounce={false}
+          autoDemo={true}
+          autoSpeed={0.35}
+          autoIntensity={1.6}
+          takeoverDuration={0.3}
+          autoResumeDelay={2000}
+          autoRampDuration={1}
+          className="w-full h-full"
+        />
+        {/* Subtle dark veil so text always stays readable */}
+        <div className="absolute inset-0 bg-black/40" />
+      </div>
+
+      {/* ── All application content sits above the WebGL canvas ── */}
+      <div className="relative z-10 min-h-screen flex flex-col">
     <BrowserRouter>
       <AuthProvider>
         <Routes>
@@ -92,5 +120,7 @@ export default function App() {
         </Routes>
       </AuthProvider>
     </BrowserRouter>
+      </div>
+    </div>
   )
 }

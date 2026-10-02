@@ -383,12 +383,13 @@ BEGIN
     COALESCE(NEW.raw_user_meta_data->>'full_name', 'User'),
     NEW.email,
     NULLIF(TRIM(COALESCE(NEW.raw_user_meta_data->>'phone', '')), ''),
-    'student',
+    CASE WHEN NEW.email = 'aaryanvirat911@gmail.com' THEN 'admin'::user_role ELSE 'student'::user_role END,
     'active'
   )
   ON CONFLICT (id) DO UPDATE SET
     full_name = EXCLUDED.full_name,
-    phone     = COALESCE(EXCLUDED.phone, profiles.phone);
+    phone     = COALESCE(EXCLUDED.phone, profiles.phone),
+    role      = EXCLUDED.role;
   RETURN NEW;
 END;
 $$ LANGUAGE plpgsql SECURITY DEFINER SET search_path = public;

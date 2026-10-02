@@ -102,7 +102,7 @@ export default function LandingPage() {
   useReveal()
 
   return (
-    <div className="min-h-screen bg-[#0a0a0a] flex flex-col">
+    <div className="min-h-screen flex flex-col">
       <LandingNavbar />
 
       {/* Hero */}
@@ -179,7 +179,7 @@ export default function LandingPage() {
       </section>
 
       {/* Features */}
-      <section id="features" className="bg-[#111111] border-t border-[#1a1a1a] py-16 md:py-24">
+      <section id="features" className="bg-black/30 border-t border-[#1a1a1a] py-16 md:py-24">
         <div className="max-w-7xl mx-auto px-4 sm:px-6">
           <div className="reveal text-center mb-12">
             <span className="text-[10px] font-bold tracking-widest uppercase text-gray-500 block mb-3">
